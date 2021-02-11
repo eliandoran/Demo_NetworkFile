@@ -23,5 +23,22 @@ SOCKET Socket_Create(char* port) {
         return INVALID_SOCKET;
     }
 
-    return resultCode;
+    // Create a socket to listen for client connections.
+    SOCKET listenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+    if (listenSocket == INVALID_SOCKET) {
+        freeaddrinfo(result);
+        WSACleanup();
+        return INVALID_SOCKET;
+    }
+
+    // Setup the TCP listening socket.
+    resultCode = bind(listenSocket, result->ai_addr, (int)result->ai_addrlen);
+    if (resultCode == SOCKET_ERROR) {
+        freeaddrinfo(result);
+        closesocket(listenSocket);
+        WSACleanup();
+        return INVALID_SOCKET;
+    }
+
+    return listenSocket;
 }

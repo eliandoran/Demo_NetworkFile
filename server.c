@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "core.h"
 #include "socket.h"
-
-#include <windows.h>
-
-#define SERVER_PORT "13371"
 
 void ListFiles(char* path) {
     WIN32_FIND_DATA findData;
@@ -33,7 +31,7 @@ int main() {
     }
 
     // Create the socket.
-    SOCKET listenSocket = Socket_Create(SERVER_PORT);
+    SOCKET listenSocket = Socket_CreateServerSocket(NETWORKSEND_PORT);
     if (listenSocket == INVALID_SOCKET) {
         printf("Unable to create socket.\n");
         return EXIT_FAILURE;
@@ -42,12 +40,12 @@ int main() {
     // Listen on the socket.
     result = Socket_Listen(listenSocket);
     if (result == SOCKET_ERROR) {
-        printf("Unable to listen for port %s.", SERVER_PORT);
+        printf("Unable to listen for port %s.", NETWORKSEND_PORT);
         return EXIT_FAILURE;
     }
 
     // Accept a client socket.
-    printf("Server started on port %s.\n", SERVER_PORT);
+    printf("Server started on port %s.\n", NETWORKSEND_PORT);
 
     SOCKET clientSocket = Socket_AcceptClient(listenSocket);
     if (clientSocket == INVALID_SOCKET) {

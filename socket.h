@@ -1,5 +1,6 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <windows.h>
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -8,7 +9,7 @@ int Socket_Initialize() {
     return WSAStartup(MAKEWORD(2, 2), &wsaData);
 }
 
-SOCKET Socket_Create(char* port) {
+SOCKET Socket_CreateServerSocket(char* port) {
     struct addrinfo hints, *result;
     ZeroMemory(&hints, sizeof(hints));
     hints.ai_family = AF_INET;
@@ -41,6 +42,31 @@ SOCKET Socket_Create(char* port) {
     }
 
     return listenSocket;
+}
+
+SOCKET Socket_CreateClientSocket(char* host, char* port) {
+    struct addrinfo hints, *result;
+    ZeroMemory(&hints, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    // Resolve the server address and port.
+    int resultCode = getaddrinfo(host, port, &hints, &result);
+    if (resultCode != 0) {
+        WSACleanup();
+        return INVALID_SOCKET;
+    }
+
+    // Create a socket for connecting to the server.
+    SOCKET connectSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+    if (connectSocket == INVALID_SOCKET) {
+        freeaddrinfo(result);
+        WSACleanup();
+        return INVALID_SOCKET;
+    }
+
+    return connectSocket;
 }
 
 int Socket_Listen(SOCKET listenSocket) {

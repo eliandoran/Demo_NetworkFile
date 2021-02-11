@@ -7,6 +7,11 @@
 
 #define NETWORKSEND_HOST "127.0.0.1"
 
+void NetworkSend_HandleConnect(SOCKET connectSocket) {
+    char* message = "Hello world";
+    Socket_Send(connectSocket, message, strlen(message));
+}
+
 int main() {
     printf("NetworkSend Client\n\n");
 
@@ -24,6 +29,7 @@ int main() {
     }
 
     LOG("Connected to port %s:%s successfully.\n", NETWORKSEND_HOST, NETWORKSEND_PORT);
+    NetworkSend_HandleConnect(connectSocket);
 
     LOG("Client has ended.\n");
     return EXIT_SUCCESS;

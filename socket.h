@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
@@ -73,7 +74,7 @@ SOCKET Socket_CreateClientSocket(char* host, char* port) {
         closesocket(connectSocket);
         return INVALID_SOCKET;
     }
-    
+
     freeaddrinfo(result);
     return connectSocket;
 }
@@ -96,4 +97,17 @@ SOCKET Socket_AcceptClient(SOCKET listenSocket) {
     }
 
     return result;
+}
+
+bool Socket_Send(SOCKET socket, const char* buffer, int bufferLen) {
+    int result = send(socket, buffer, bufferLen, 0);
+
+    if (result == SOCKET_ERROR) {
+        closesocket(socket);
+        WSACleanup();
+        return false;
+    }
+
+    LOG("Sent %d bytes.\n", bufferLen);
+    return true;
 }

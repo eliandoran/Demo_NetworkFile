@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "socket.h"
+
 #include <windows.h>
 
 void ListFiles(char* path) {
@@ -18,6 +20,7 @@ void ListFiles(char* path) {
 }
 
 int main() {
-    ListFiles("./*");
+    Socket_Initialize();
+
     return EXIT_SUCCESS;
 }

@@ -1,0 +1,1 @@
+#define LOG(...) (printf("INFO: ")); (printf(__VA_ARGS__));

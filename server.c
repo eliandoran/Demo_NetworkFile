@@ -27,21 +27,21 @@ void NetworkSend_HandleClient(SOCKET clientSocket) {
 int main() {
     int result = 0;
     if (result = Socket_Initialize()) {
-        LOG("Unable to initialize socket.\n");
+        LOG_ERROR("Unable to initialize socket.\n");
         return EXIT_FAILURE;
     }
 
     // Create the socket.
     SOCKET listenSocket = Socket_CreateServerSocket(NETWORKSEND_PORT);
     if (listenSocket == INVALID_SOCKET) {
-        LOG("Unable to create socket.\n");
+        LOG_ERROR("Unable to create socket.\n");
         return EXIT_FAILURE;
     }
 
     // Listen on the socket.
     result = Socket_Listen(listenSocket);
     if (result == SOCKET_ERROR) {
-        LOG("Unable to listen for port %s.", NETWORKSEND_PORT);
+        LOG_ERROR("Unable to listen for port %s.", NETWORKSEND_PORT);
         return EXIT_FAILURE;
     }
 
@@ -50,7 +50,7 @@ int main() {
 
     SOCKET clientSocket = Socket_AcceptClient(listenSocket);
     if (clientSocket == INVALID_SOCKET) {
-        LOG("Unable to accept client socket.\n");
+        LOG_ERROR("Unable to accept client socket.\n");
         return EXIT_FAILURE;                
     }
     NetworkSend_HandleClient(clientSocket);

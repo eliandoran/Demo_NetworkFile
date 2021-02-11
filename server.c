@@ -20,7 +20,11 @@ void ListFiles(char* path) {
 }
 
 int main() {
-    Socket_Initialize();
+    int result = 0;
+    if (result = Socket_Initialize()) {
+        printf("Unable to initialize socket.\n");
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }

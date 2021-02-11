@@ -25,6 +25,8 @@ void NetworkSend_HandleClient(SOCKET clientSocket) {
 }
 
 int main() {
+    printf("NetworkSend Server\n\n");
+
     int result = 0;
     if (result = Socket_Initialize()) {
         LOG_ERROR("Unable to initialize socket.\n");

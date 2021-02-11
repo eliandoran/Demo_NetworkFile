@@ -8,6 +8,8 @@
 #define NETWORKSEND_HOST "127.0.0.1"
 
 int main() {
+    printf("NetworkSend Client\n\n");
+
     int result = 0;
     if (result = Socket_Initialize()) {
         LOG_ERROR("Unable to initialize socket.\n");

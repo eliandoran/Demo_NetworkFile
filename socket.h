@@ -49,7 +49,7 @@ SOCKET Socket_CreateClientSocket(char* host, char* port) {
     ZeroMemory(&hints, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
+    hints.ai_protocol = IPPROTO_TCP;    
 
     // Resolve the server address and port.
     int resultCode = getaddrinfo(host, port, &hints, &result);
@@ -64,8 +64,17 @@ SOCKET Socket_CreateClientSocket(char* host, char* port) {
         freeaddrinfo(result);
         WSACleanup();
         return INVALID_SOCKET;
-    }
+    }    
 
+    // Connect to server.
+    resultCode = connect(connectSocket, result->ai_addr, (int)result->ai_addrlen);
+    if (resultCode == SOCKET_ERROR) {
+        // Ideally, if connect fails, the next address returned by getaddrinfo should be used instead.
+        closesocket(connectSocket);
+        return INVALID_SOCKET;
+    }
+    
+    freeaddrinfo(result);
     return connectSocket;
 }
 

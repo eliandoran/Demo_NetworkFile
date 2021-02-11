@@ -4,6 +4,8 @@
 
 #include <windows.h>
 
+#define SERVER_PORT "13371"
+
 void ListFiles(char* path) {
     WIN32_FIND_DATA findData;
     HANDLE findHandle = FindFirstFile(path, &findData);
@@ -23,6 +25,13 @@ int main() {
     int result = 0;
     if (result = Socket_Initialize()) {
         printf("Unable to initialize socket.\n");
+        return EXIT_FAILURE;
+    }
+
+    // Create the socket.
+    SOCKET listenSocket = Socket_Create(SERVER_PORT);
+    if (listenSocket == INVALID_SOCKET) {
+        printf("Unable to create socket.\n");
         return EXIT_FAILURE;
     }
 

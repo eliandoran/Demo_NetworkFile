@@ -42,3 +42,13 @@ SOCKET Socket_Create(char* port) {
 
     return listenSocket;
 }
+
+int Socket_Listen(SOCKET socket) {
+    int resultCode = listen(socket, SOMAXCONN);
+    if (resultCode == SOCKET_ERROR) {
+        closesocket(socket);
+        WSACleanup();
+    }
+
+    return resultCode;
+}

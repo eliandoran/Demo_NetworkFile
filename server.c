@@ -35,5 +35,12 @@ int main() {
         return EXIT_FAILURE;
     }
 
+    // Listen on the socket.
+    result = Socket_Listen(listenSocket);
+    if (result == SOCKET_ERROR) {
+        printf("Unable to listen for port %s.", SERVER_PORT);
+        return EXIT_FAILURE;
+    }
+
     return EXIT_SUCCESS;
 }

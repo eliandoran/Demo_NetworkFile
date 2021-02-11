@@ -21,4 +21,7 @@ int main() {
     }
 
     printf("Connected to port %s:%s successfully.\n", NETWORKSEND_HOST, NETWORKSEND_PORT);
+
+    printf("Client has ended.\n");
+    return EXIT_SUCCESS;
 }

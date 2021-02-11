@@ -19,7 +19,7 @@ void ListFiles(char* path) {
     } while (FindNextFile(findHandle, &findData) != 0);
 }
 
-void NetworkSend_HandleClient() {
+void NetworkSend_HandleClient(SOCKET clientSocket) {
     printf("Client connected.\n");
 }
 
@@ -52,6 +52,8 @@ int main() {
         printf("Unable to accept client socket.\n");
         return EXIT_FAILURE;                
     }
+    NetworkSend_HandleClient(clientSocket);
 
+    printf("Server has shut down.\n");
     return EXIT_SUCCESS;
 }

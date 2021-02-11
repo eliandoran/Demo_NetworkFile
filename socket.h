@@ -43,12 +43,22 @@ SOCKET Socket_Create(char* port) {
     return listenSocket;
 }
 
-int Socket_Listen(SOCKET socket) {
-    int resultCode = listen(socket, SOMAXCONN);
+int Socket_Listen(SOCKET listenSocket) {
+    int resultCode = listen(listenSocket, SOMAXCONN);
     if (resultCode == SOCKET_ERROR) {
-        closesocket(socket);
+        closesocket(listenSocket);
         WSACleanup();
     }
 
     return resultCode;
+}
+
+SOCKET Socket_AcceptClient(SOCKET listenSocket) {
+    SOCKET result = accept(listenSocket, NULL, NULL);
+    if (result == INVALID_SOCKET) {
+        closesocket(listenSocket);
+        WSACleanup();
+    }
+
+    return result;
 }

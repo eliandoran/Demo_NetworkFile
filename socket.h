@@ -1,9 +1,10 @@
+#ifndef SOCKET_H_DEFINED
+#define SOCKET_H_DEFINED
+
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
 #include "log.h"
-
-#pragma comment(lib, "Ws2_32.lib")
 
 int Socket_Initialize() {
     WSADATA wsaData;
@@ -180,3 +181,5 @@ int Socket_ShutdownSend(SOCKET socket) {
 
     return 0;
 }
+
+#endif

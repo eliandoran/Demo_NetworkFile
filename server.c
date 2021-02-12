@@ -5,20 +5,7 @@
 #include "log.h"
 #include "socket.h"
 
-void ListFiles(char* path) {
-    WIN32_FIND_DATA findData;
-    HANDLE findHandle = FindFirstFile(path, &findData);
-
-    if (findHandle == INVALID_HANDLE_VALUE) {
-        // Unable to open handle for file search.
-        return;
-    }
-
-    // Iterate through each of the files.
-    do {
-        printf("%s\n", findData.cFileName);
-    } while (FindNextFile(findHandle, &findData) != 0);
-}
+#include "server/ls.h"
 
 int NetworkSend_HandleClient(SOCKET clientSocket) {
     LOG("Client connected.\n");

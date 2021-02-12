@@ -14,6 +14,10 @@ int NetworkSend_ListFiles(SOCKET clientSocket, char* path) {
     if (findHandle != INVALID_HANDLE_VALUE) {
         // Iterate through each of the files.
         do {
+            // Ignore directories.
+            if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+                continue;
+
             printf("Got file: %s\n", findData.cFileName);
         } while (FindNextFileA(findHandle, &findData) != 0);
 

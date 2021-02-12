@@ -19,6 +19,16 @@ int NetworkSend_HandleClient(SOCKET clientSocket) {
     if (result < 0) return result;
 
     LOG("Got request from client w/ version #%d and command: %d.\n", request.version, request.commandId);
+    
+    switch (request.commandId) {
+        case NETWORKSEND_REQUEST_COMMAND_LIST_FILES:
+            NetworkSend_ListFiles(clientSocket, ".\\*");
+            break;
+
+        default:
+            LOG_ERROR("Unrecognized client command: %d\n.", request.commandId);
+            return -1;
+    }
 }
 
 int main() {

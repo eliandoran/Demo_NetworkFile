@@ -4,20 +4,26 @@
 #include <stdio.h>
 #include "core.h"
 #include "socket.h"
+#include "response.h"
 
-void NetworkSend_ListFiles(char* path) {
+int NetworkSend_ListFiles(SOCKET clientSocket, char* path) {
+    struct NetworkSend_Response response;
     WIN32_FIND_DATAA findData;
     HANDLE findHandle = FindFirstFileA(path, &findData);
 
-    if (findHandle == INVALID_HANDLE_VALUE) {
+    if (findHandle != INVALID_HANDLE_VALUE) {
+        // Iterate through each of the files.
+        do {
+            printf("Got file: %s\n", findData.cFileName);
+        } while (FindNextFileA(findHandle, &findData) != 0);
+
+        response.status = NETWORKSEND_RESPONSE_STATUS_OK;
+    } else {
         // Unable to open handle for file search.
-        return;
+        response.status = NETWORKSEND_RESPONSE_STATUS_ERROR;
     }
 
-    // Iterate through each of the files.
-    do {
-        printf("%s\n", findData.cFileName);
-    } while (FindNextFileA(findHandle, &findData) != 0);
+    return NetworkSend_SendResponse(clientSocket, &response);
 }
 
 #endif

@@ -20,4 +20,14 @@ int NetworkSend_SendRequest(SOCKET socket, struct NetworkSend_Request *request) 
     return Socket_Send(socket, data, sizeof(data));
 }
 
+int NetworkSend_ReadRequest(SOCKET socket, struct NetworkSend_Request *request) {
+    char data[2];
+    int num = Socket_Receive(socket, data, sizeof(data));
+    if (num == sizeof(data)) {
+        request->version = data[0];
+        request->commandId = data[1];
+    }
+    return num;
+}
+
 #endif

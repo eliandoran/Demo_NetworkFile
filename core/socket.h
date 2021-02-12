@@ -1,6 +1,7 @@
 #ifndef SOCKET_H_DEFINED
 #define SOCKET_H_DEFINED
 
+#include <stdio.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
@@ -161,6 +162,7 @@ int Socket_Receive(SOCKET socket, char* buffer, int bufferLen) {
         LOG("Received %d bytes.\n", num);
         printf("[RECV] "); Socket_LogBytes(curPointer, num);
         received += num;
+        remaining -= num;
     }
 
     return received;

@@ -4,6 +4,7 @@
 #include "core.h"
 #include "log.h"
 #include "socket.h"
+#include "request.h"
 
 #include "ls.h"
 
@@ -13,10 +14,11 @@ int NetworkSend_HandleClient(SOCKET clientSocket) {
     char buf[512];
     int result;
 
-    Socket_Receive(clientSocket, buf, 512);
+    struct NetworkSend_Request request;    
+    result = NetworkSend_ReadRequest(clientSocket, &request);
     if (result < 0) return result;
 
-    LOG("%s\n", buf);
+    LOG("Got request from client w/ version #%d and command: %d.\n", request.version, request.commandId);
 }
 
 int main() {

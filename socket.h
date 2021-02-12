@@ -1,12 +1,18 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
+#include "log.h"
 
 #pragma comment(lib, "Ws2_32.lib")
 
 int Socket_Initialize() {
     WSADATA wsaData;
     return WSAStartup(MAKEWORD(2, 2), &wsaData);
+}
+
+void Socket_Cleanup() {
+    LOG("Cleaning up socket.\n");
+    WSACleanup();
 }
 
 SOCKET Socket_CreateServerSocket(char* port) {
@@ -20,7 +26,7 @@ SOCKET Socket_CreateServerSocket(char* port) {
     // Resolve the local address and port to be used by the server.
     int resultCode = getaddrinfo(NULL, port, &hints, &result);
     if (resultCode != 0) {
-        WSACleanup();
+        Socket_Cleanup();
         return INVALID_SOCKET;
     }
 
@@ -28,7 +34,7 @@ SOCKET Socket_CreateServerSocket(char* port) {
     SOCKET listenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
     if (listenSocket == INVALID_SOCKET) {
         freeaddrinfo(result);
-        WSACleanup();
+        Socket_Cleanup();
         return INVALID_SOCKET;
     }
 
@@ -37,7 +43,7 @@ SOCKET Socket_CreateServerSocket(char* port) {
     if (resultCode == SOCKET_ERROR) {
         freeaddrinfo(result);
         closesocket(listenSocket);
-        WSACleanup();
+        Socket_Cleanup();
         return INVALID_SOCKET;
     }
 
@@ -54,7 +60,7 @@ SOCKET Socket_CreateClientSocket(char* host, char* port) {
     // Resolve the server address and port.
     int resultCode = getaddrinfo(host, port, &hints, &result);
     if (resultCode != 0) {
-        WSACleanup();
+        Socket_Cleanup();
         return INVALID_SOCKET;
     }
 
@@ -62,7 +68,7 @@ SOCKET Socket_CreateClientSocket(char* host, char* port) {
     SOCKET connectSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
     if (connectSocket == INVALID_SOCKET) {
         freeaddrinfo(result);
-        WSACleanup();
+        Socket_Cleanup();
         return INVALID_SOCKET;
     }    
 
@@ -82,7 +88,7 @@ int Socket_Listen(SOCKET listenSocket) {
     int resultCode = listen(listenSocket, SOMAXCONN);
     if (resultCode == SOCKET_ERROR) {
         closesocket(listenSocket);
-        WSACleanup();
+        Socket_Cleanup();
     }
 
     return resultCode;
@@ -91,8 +97,9 @@ int Socket_Listen(SOCKET listenSocket) {
 SOCKET Socket_AcceptClient(SOCKET listenSocket) {
     SOCKET result = accept(listenSocket, NULL, NULL);
     if (result == INVALID_SOCKET) {
+        LOG_ERROR("AcceptClient: %d\n", WSAGetLastError());
         closesocket(listenSocket);
-        WSACleanup();
+        Socket_Cleanup();
     }
 
     return result;
@@ -120,7 +127,7 @@ int Socket_Send(SOCKET socket, const void* buffer, int bufferLen) {
             }
 
             closesocket(socket);
-            WSACleanup();
+            Socket_Cleanup();
             return -1;
         }
 
@@ -150,7 +157,6 @@ int Socket_Receive(SOCKET socket, char* buffer, int bufferLen) {
             }
 
             closesocket(socket);
-            WSACleanup();
             return -1;
         } else if (num == 0) {
             LOG("Connection closing...\n");
@@ -163,4 +169,14 @@ int Socket_Receive(SOCKET socket, char* buffer, int bufferLen) {
     }
 
     return received;
+}
+
+int Socket_ShutdownSend(SOCKET socket) {
+    int result = shutdown(socket, SD_SEND);
+    if (result == SOCKET_ERROR) {
+        closesocket(socket);
+        return -1;
+    }
+
+    return 0;
 }

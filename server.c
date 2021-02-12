@@ -22,7 +22,7 @@ void ListFiles(char* path) {
 
 int NetworkSend_HandleClient(SOCKET clientSocket) {
     LOG("Client connected.\n");
-    
+
     char buf[512];
     int result;
 
@@ -58,18 +58,25 @@ int main() {
     // Accept a client socket.
     LOG("Server started on port %s.\n", NETWORKSEND_PORT);
 
-    SOCKET clientSocket = Socket_AcceptClient(listenSocket);
-    if (clientSocket == INVALID_SOCKET) {
-        LOG_ERROR("Unable to accept client socket.\n");
-        return EXIT_FAILURE;                
-    }
+    while (1) {
+        SOCKET clientSocket = Socket_AcceptClient(listenSocket);
+        if (clientSocket == INVALID_SOCKET) {
+            LOG_ERROR("Unable to accept client socket.\n");
+            return EXIT_FAILURE;                
+        }
 
-    // Handle the client connection.
-    result = NetworkSend_HandleClient(clientSocket);
-    if (result < 0) {
-        LOG_ERROR("Connection error.\n");
-        return EXIT_FAILURE;
-    }
+        // Handle the client connection.
+        result = NetworkSend_HandleClient(clientSocket);
+        if (result < 0) {
+            LOG_ERROR("Connection error.\n");
+            return EXIT_FAILURE;
+        }
+
+        // Disconnect the send half of the connection.
+        Socket_ShutdownSend(clientSocket);
+
+        LOG("---------------\n");
+    }   
 
     LOG("Server has shut down.\n");
     return EXIT_SUCCESS;

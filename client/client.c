@@ -5,14 +5,25 @@
 #include "log.h"
 #include "socket.h"
 #include "request.h"
+#include "response.h"
 
 #define NETWORKSEND_HOST "127.0.0.1"
 
 int NetworkSend_RequestFiles(SOCKET connectSocket) {
+    int result;
     struct NetworkSend_Request request;
     request.commandId = NETWORKSEND_REQUEST_COMMAND_LIST_FILES;
     request.version = NETWORKSEND_REQUEST_VERSION_1;
-    return NetworkSend_SendRequest(connectSocket, &request);
+
+    // Send the request.
+    result = NetworkSend_SendRequest(connectSocket, &request);
+    if (result < 0) return -1;
+
+    // Parse the response.
+    struct NetworkSend_Response response;
+    result = NetworkSend_ReadResponse(connectSocket, &response);
+    LOG("Got response: %d\n", response.status);
+    if (response.status != NETWORKSEND_RESPONSE_STATUS_OK) return -1;
 }
 
 int NetworkSend_HandleConnect(SOCKET connectSocket) {

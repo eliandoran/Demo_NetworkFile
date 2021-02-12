@@ -17,4 +17,13 @@ int NetworkSend_SendResponse(SOCKET socket, struct NetworkSend_Response *respons
     return Socket_Send(socket, data, sizeof(data));
 }
 
+int NetworkSend_ReadResponse(SOCKET socket, struct NetworkSend_Response *response) {
+    char data[1];
+    int num = Socket_Receive(socket, data, sizeof(data));
+    if (num == sizeof(data)) {
+        response->status = data[0];
+    }
+    return num;
+}
+
 #endif

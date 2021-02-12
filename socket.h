@@ -98,7 +98,16 @@ SOCKET Socket_AcceptClient(SOCKET listenSocket) {
     return result;
 }
 
+void Socket_LogBytes(const char* buffer, int bufferLen) {
+    for (int i=0; i<bufferLen; i++) {
+        printf("%d ", (int)buffer[i]);
+    }
+
+    printf("\n");
+}
+
 int Socket_Send(SOCKET socket, const char* buffer, int bufferLen) {
+    printf("[SEND] "); Socket_LogBytes(buffer, bufferLen);
     int result = send(socket, buffer, bufferLen, 0);
 
     if (result == SOCKET_ERROR) {
@@ -107,7 +116,7 @@ int Socket_Send(SOCKET socket, const char* buffer, int bufferLen) {
         return -1;
     }
 
-    LOG("Sent %d bytes.\n", bufferLen);
+    LOG("Sent %d bytes.\n", bufferLen);    
     return bufferLen;
 }
 
@@ -116,6 +125,7 @@ int Socket_Receive(SOCKET socket, char* buffer, int bufferLen) {
 
     if (result > 0) {
         LOG("Received %d bytes.\n", result);
+        printf("[RECV] "); Socket_LogBytes(buffer, result);
     } else if (result == 0) {
         LOG("Connection closing...\n");
     } else {

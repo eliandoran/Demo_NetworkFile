@@ -106,14 +106,26 @@ void Socket_LogBytes(const char* buffer, int bufferLen) {
     printf("\n");
 }
 
-int Socket_Send(SOCKET socket, const char* buffer, int bufferLen) {
+int Socket_Send(SOCKET socket, const void* buffer, int bufferLen) {    
     printf("[SEND] "); Socket_LogBytes(buffer, bufferLen);
-    int result = send(socket, buffer, bufferLen, 0);
+    unsigned char *curPointer = (unsigned char*) buffer;
+    int remaining = bufferLen;
 
-    if (result == SOCKET_ERROR) {
-        closesocket(socket);
-        WSACleanup();
-        return -1;
+    while (remaining > 0) {
+        int num = send(socket, curPointer, remaining, 0);
+        if (num == SOCKET_ERROR) {
+            if (WSAGetLastError() == WSAEWOULDBLOCK) {
+                // optional: use select() to check for timeout to fail the send.
+                continue;
+            }
+
+            closesocket(socket);
+            WSACleanup();
+            return -1;
+        }
+
+        curPointer += num;
+        remaining -= num;
     }
 
     LOG("Sent %d bytes.\n", bufferLen);    

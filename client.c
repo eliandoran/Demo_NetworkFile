@@ -10,10 +10,7 @@
 int NetworkSend_HandleConnect(SOCKET connectSocket) {
     LOG("Connected to port %s:%s successfully.\n", NETWORKSEND_HOST, NETWORKSEND_PORT);
 
-    char* message = "Hello world";
-    int result;
-    
-    Socket_Send(connectSocket, message, strlen(message));
+    int result = Socket_SendString(connectSocket, "Hello World.");
     if (result < 0) return result;
 }
 

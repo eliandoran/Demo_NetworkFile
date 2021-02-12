@@ -120,6 +120,10 @@ int Socket_Send(SOCKET socket, const char* buffer, int bufferLen) {
     return bufferLen;
 }
 
+int Socket_SendString(SOCKET socket, const char* string) {
+    return Socket_Send(socket, string, strlen(string) + 1);
+}
+
 int Socket_Receive(SOCKET socket, char* buffer, int bufferLen) {
     int result = recv(socket, buffer, bufferLen, 0);
 

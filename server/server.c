@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "core.h"
-#include "log.h"
-#include "socket.h"
+#include "../core.h"
+#include "../log.h"
+#include "../socket.h"
 
-#include "server/ls.h"
+#include "ls.h"
 
 int NetworkSend_HandleClient(SOCKET clientSocket) {
     LOG("Client connected.\n");

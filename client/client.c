@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "core.h"
-#include "log.h"
-#include "socket.h"
+#include "../core.h"
+#include "../log.h"
+#include "../socket.h"
 
 #define NETWORKSEND_HOST "127.0.0.1"
 

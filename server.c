@@ -22,6 +22,7 @@ void ListFiles(char* path) {
 
 int NetworkSend_HandleClient(SOCKET clientSocket) {
     LOG("Client connected.\n");
+    
     char buf[512];
     int result;
 

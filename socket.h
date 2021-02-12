@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
@@ -99,17 +98,17 @@ SOCKET Socket_AcceptClient(SOCKET listenSocket) {
     return result;
 }
 
-bool Socket_Send(SOCKET socket, const char* buffer, int bufferLen) {
+int Socket_Send(SOCKET socket, const char* buffer, int bufferLen) {
     int result = send(socket, buffer, bufferLen, 0);
 
     if (result == SOCKET_ERROR) {
         closesocket(socket);
         WSACleanup();
-        return false;
+        return -1;
     }
 
     LOG("Sent %d bytes.\n", bufferLen);
-    return true;
+    return bufferLen;
 }
 
 int Socket_Receive(SOCKET socket, char* buffer, int bufferLen) {

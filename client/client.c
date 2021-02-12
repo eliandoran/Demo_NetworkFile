@@ -4,13 +4,21 @@
 #include "core.h"
 #include "log.h"
 #include "socket.h"
+#include "request.h"
 
 #define NETWORKSEND_HOST "127.0.0.1"
+
+int NetworkSend_RequestFiles(SOCKET connectSocket) {
+    struct NetworkSend_Request request;
+    request.commandId = NETWORKSEND_REQUEST_COMMAND_LIST_FILES;
+    request.version = NETWORKSEND_REQUEST_VERSION_1;
+    return NetworkSend_SendRequest(connectSocket, &request);
+}
 
 int NetworkSend_HandleConnect(SOCKET connectSocket) {
     LOG("Connected to port %s:%s successfully.\n", NETWORKSEND_HOST, NETWORKSEND_PORT);
 
-    int result = Socket_SendString(connectSocket, "Hello World.");
+    int result = NetworkSend_RequestFiles(connectSocket);
     if (result < 0) return result;
 }
 

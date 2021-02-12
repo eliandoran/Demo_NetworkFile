@@ -29,7 +29,6 @@ SOCKET Socket_CreateServerSocket(char* port) {
     // Resolve the local address and port to be used by the server.
     int resultCode = getaddrinfo(NULL, port, &hints, &result);
     if (resultCode != 0) {
-        Socket_Cleanup();
         return INVALID_SOCKET;
     }
 
@@ -37,7 +36,6 @@ SOCKET Socket_CreateServerSocket(char* port) {
     SOCKET listenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
     if (listenSocket == INVALID_SOCKET) {
         freeaddrinfo(result);
-        Socket_Cleanup();
         return INVALID_SOCKET;
     }
 
@@ -46,7 +44,6 @@ SOCKET Socket_CreateServerSocket(char* port) {
     if (resultCode == SOCKET_ERROR) {
         freeaddrinfo(result);
         closesocket(listenSocket);
-        Socket_Cleanup();
         return INVALID_SOCKET;
     }
 
@@ -63,7 +60,6 @@ SOCKET Socket_CreateClientSocket(char* host, char* port) {
     // Resolve the server address and port.
     int resultCode = getaddrinfo(host, port, &hints, &result);
     if (resultCode != 0) {
-        Socket_Cleanup();
         return INVALID_SOCKET;
     }
 
@@ -71,7 +67,6 @@ SOCKET Socket_CreateClientSocket(char* host, char* port) {
     SOCKET connectSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
     if (connectSocket == INVALID_SOCKET) {
         freeaddrinfo(result);
-        Socket_Cleanup();
         return INVALID_SOCKET;
     }    
 
@@ -91,7 +86,6 @@ int Socket_Listen(SOCKET listenSocket) {
     int resultCode = listen(listenSocket, SOMAXCONN);
     if (resultCode == SOCKET_ERROR) {
         closesocket(listenSocket);
-        Socket_Cleanup();
     }
 
     return resultCode;
@@ -102,7 +96,6 @@ SOCKET Socket_AcceptClient(SOCKET listenSocket) {
     if (result == INVALID_SOCKET) {
         LOG_ERROR("AcceptClient: %d\n", WSAGetLastError());
         closesocket(listenSocket);
-        Socket_Cleanup();
     }
 
     return result;
@@ -130,7 +123,6 @@ int Socket_Send(SOCKET socket, const void* buffer, int bufferLen) {
             }
 
             closesocket(socket);
-            Socket_Cleanup();
             return -1;
         }
 

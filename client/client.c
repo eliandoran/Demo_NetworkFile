@@ -27,6 +27,7 @@ int main() {
     SOCKET connectSocket = Socket_CreateClientSocket(NETWORKSEND_HOST, NETWORKSEND_PORT);
     if (connectSocket == INVALID_SOCKET) {
         LOG_ERROR("Unable to connect to server at host %s on port %s.\n", NETWORKSEND_HOST, NETWORKSEND_PORT);
+        Socket_Cleanup();
         return EXIT_FAILURE;
     }
 
@@ -34,9 +35,11 @@ int main() {
     result = NetworkSend_HandleConnect(connectSocket);
     if (result < 0) {
         LOG_ERROR("Connection error.\n");
+        Socket_Cleanup();
         return EXIT_FAILURE;
     }
 
     LOG("Client has ended.\n");
+    Socket_Cleanup();
     return EXIT_SUCCESS;
 }

@@ -25,6 +25,7 @@ int main() {
     int result = 0;
     if (result = Socket_Initialize()) {
         LOG_ERROR("Unable to initialize socket.\n");
+        Socket_Cleanup();
         return EXIT_FAILURE;
     }
 
@@ -32,6 +33,7 @@ int main() {
     SOCKET listenSocket = Socket_CreateServerSocket(NETWORKSEND_PORT);
     if (listenSocket == INVALID_SOCKET) {
         LOG_ERROR("Unable to create socket.\n");
+        Socket_Cleanup();
         return EXIT_FAILURE;
     }
 
@@ -39,6 +41,7 @@ int main() {
     result = Socket_Listen(listenSocket);
     if (result == SOCKET_ERROR) {
         LOG_ERROR("Unable to listen for port %s.", NETWORKSEND_PORT);
+        Socket_Cleanup();
         return EXIT_FAILURE;
     }
 
@@ -49,6 +52,7 @@ int main() {
         SOCKET clientSocket = Socket_AcceptClient(listenSocket);
         if (clientSocket == INVALID_SOCKET) {
             LOG_ERROR("Unable to accept client socket.\n");
+            Socket_Cleanup();
             return EXIT_FAILURE;                
         }
 
@@ -56,6 +60,7 @@ int main() {
         result = NetworkSend_HandleClient(clientSocket);
         if (result < 0) {
             LOG_ERROR("Connection error.\n");
+            Socket_Cleanup();
             return EXIT_FAILURE;
         }
 
@@ -66,5 +71,6 @@ int main() {
     }   
 
     LOG("Server has shut down.\n");
+    Socket_Cleanup();
     return EXIT_SUCCESS;
 }

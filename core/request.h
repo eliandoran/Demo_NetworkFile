@@ -1,8 +1,8 @@
 #ifndef REQUEST_H_DEFINED
 #define REQUEST_H_DEFINED
 
-#include "../core.h"
-#include "../socket.h"
+#include "core.h"
+#include "socket.h"
 
 struct NetworkSend_Request {
     short version;

@@ -2,8 +2,8 @@
 #define LS_H_DEFINED
 
 #include <stdio.h>
-#include "../core.h"
-#include "../socket.h"
+#include "../core/core.h"
+#include "../core/socket.h"
 
 void NetworkSend_ListFiles(char* path) {
     WIN32_FIND_DATAA findData;

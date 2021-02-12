@@ -20,11 +20,14 @@ void ListFiles(char* path) {
     } while (FindNextFile(findHandle, &findData) != 0);
 }
 
-void NetworkSend_HandleClient(SOCKET clientSocket) {
+int NetworkSend_HandleClient(SOCKET clientSocket) {
     LOG("Client connected.\n");
-
     char buf[512];
+    int result;
+
     Socket_Receive(clientSocket, buf, 512);
+    if (result < 0) return result;
+
     LOG("%s\n", buf);
 }
 
@@ -59,7 +62,13 @@ int main() {
         LOG_ERROR("Unable to accept client socket.\n");
         return EXIT_FAILURE;                
     }
-    NetworkSend_HandleClient(clientSocket);
+
+    // Handle the client connection.
+    result = NetworkSend_HandleClient(clientSocket);
+    if (result < 0) {
+        LOG_ERROR("Connection error.\n");
+        return EXIT_FAILURE;
+    }
 
     LOG("Server has shut down.\n");
     return EXIT_SUCCESS;

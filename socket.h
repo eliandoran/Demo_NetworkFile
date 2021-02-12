@@ -137,17 +137,30 @@ int Socket_SendString(SOCKET socket, const char* string) {
 }
 
 int Socket_Receive(SOCKET socket, char* buffer, int bufferLen) {
-    int result = recv(socket, buffer, bufferLen, 0);
+    unsigned char *curPointer = (unsigned char*) buffer;
+    int remaining = bufferLen;
+    int received = 0;
 
-    if (result > 0) {
-        LOG("Received %d bytes.\n", result);
-        printf("[RECV] "); Socket_LogBytes(buffer, result);
-    } else if (result == 0) {
-        LOG("Connection closing...\n");
-    } else {
-        closesocket(socket);
-        WSACleanup();
+    while (remaining > 0) {
+        int num = recv(socket, curPointer, remaining, 0);
+        if (num == SOCKET_ERROR) {
+             if (WSAGetLastError() == WSAEWOULDBLOCK) {
+                // optional: use select() to check for timeout to fail the send.
+                continue;
+            }
+
+            closesocket(socket);
+            WSACleanup();
+            return -1;
+        } else if (num == 0) {
+            LOG("Connection closing...\n");
+            return 0;
+        }
+
+        LOG("Received %d bytes.\n", num);
+        printf("[RECV] "); Socket_LogBytes(curPointer, num);
+        received += num;
     }
-    
-    return result;
+
+    return received;
 }

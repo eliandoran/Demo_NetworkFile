@@ -111,3 +111,18 @@ bool Socket_Send(SOCKET socket, const char* buffer, int bufferLen) {
     LOG("Sent %d bytes.\n", bufferLen);
     return true;
 }
+
+int Socket_Receive(SOCKET socket, char* buffer, int bufferLen) {
+    int result = recv(socket, buffer, bufferLen, 0);
+
+    if (result > 0) {
+        LOG("Received %d bytes.\n", result);
+    } else if (result == 0) {
+        LOG("Connection closing...\n");
+    } else {
+        closesocket(socket);
+        WSACleanup();
+    }
+    
+    return result;
+}

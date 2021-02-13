@@ -111,8 +111,8 @@ void Socket_LogBytes(const char* buffer, int bufferLen) {
 }
 
 int Socket_Send(SOCKET socket, const void* buffer, int bufferLen) {    
-    printf("[SEND] "); Socket_LogBytes(buffer, bufferLen);
-    unsigned char *curPointer = (unsigned char*) buffer;
+    const char *curPointer = (char*) buffer;
+    printf("[SEND] "); Socket_LogBytes(curPointer, bufferLen);
     int remaining = bufferLen;
 
     while (remaining > 0) {
@@ -139,8 +139,8 @@ int Socket_SendString(SOCKET socket, const char* string) {
     return Socket_Send(socket, string, strlen(string) + 1);
 }
 
-int Socket_Receive(SOCKET socket, char* buffer, int bufferLen) {
-    unsigned char *curPointer = (unsigned char*) buffer;
+int Socket_Receive(SOCKET socket, void* buffer, int bufferLen) {
+    char *curPointer = (char*) buffer;
     int remaining = bufferLen;
     int received = 0;
 

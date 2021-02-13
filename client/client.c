@@ -22,8 +22,10 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
     // Parse the response.
     struct NetworkSend_Response response;
     result = NetworkSend_ReadResponse(connectSocket, &response);
-    LOG("Got response: %d\n", response.status);
-    if (response.status != NETWORKSEND_RESPONSE_STATUS_OK) return -1;
+    if (response.status != NETWORKSEND_RESPONSE_STATUS_OK) {
+        LOG_ERROR("Failed to list files on remote server: %d\n", response.status);
+        return -1;
+    }
 }
 
 int NetworkSend_HandleConnect(SOCKET connectSocket) {

@@ -11,6 +11,8 @@ struct NetworkSend_FileListing {
     char* name;
     DWORD lowDateTime;
     DWORD highDateTime;
+    DWORD lowFileSize;
+    DWORD highFileSize;
 };
 
 int NetworkSend_SendFileListing(SOCKET socket, struct NetworkSend_FileListing *fileData) {
@@ -22,6 +24,8 @@ int NetworkSend_SendFileListing(SOCKET socket, struct NetworkSend_FileListing *f
     bufLength += sizeof(char) * nameLength;                 // name field
     bufLength += sizeof(fileData->lowDateTime);
     bufLength += sizeof(fileData->highDateTime);
+    bufLength += sizeof(fileData->lowFileSize);
+    bufLength += sizeof(fileData->highFileSize);
 
     // Allocate the buffer.
     char* data = (char*)malloc(bufLength);
@@ -45,6 +49,14 @@ int NetworkSend_SendFileListing(SOCKET socket, struct NetworkSend_FileListing *f
     memcpy(dataCursor, &fileData->highDateTime, sizeof(fileData->highDateTime));
     dataCursor += sizeof(fileData->highDateTime);
 
+    // Set the lowFileSize field.
+    memcpy(dataCursor, &fileData->lowFileSize, sizeof(fileData->lowFileSize));
+    dataCursor += sizeof(fileData->lowFileSize);
+
+    // Set the highFileSize field.
+    memcpy(dataCursor, &fileData->highFileSize, sizeof(fileData->highFileSize));
+    dataCursor += sizeof(fileData->highFileSize);
+
     int result = Socket_Send(socket, data, bufLength);
     free(data);
     return result;
@@ -63,12 +75,14 @@ int NetworkSend_ReadFileListing(SOCKET socket, struct NetworkSend_FileListing *f
     if (result <= 0) return result;
     fileData->name = name;
 
-    // Read the low/high date time fields.
-    DWORD dateFields[2];
-    result = Socket_Receive(socket, &dateFields, sizeof(dateFields));
+    // Read the low/high date time & size fields.
+    DWORD fields[4];
+    result = Socket_Receive(socket, &fields, sizeof(fields));
     if (result <= 0) return result;    
-    fileData->lowDateTime = dateFields[0];
-    fileData->highDateTime = dateFields[1];
+    fileData->lowDateTime = fields[0];
+    fileData->highDateTime = fields[1];
+    fileData->lowFileSize = fields[2];
+    fileData->highFileSize = fields[3];    
 
     return 1;
 }
@@ -102,7 +116,7 @@ int NetworkSend_ListFiles(SOCKET clientSocket, char* path) {
             fileData.lowDateTime = fileTime.dwLowDateTime;
             fileData.highDateTime = fileTime.dwHighDateTime;
 
-            printf("%s %d %d\n", fileData.name, fileData.lowDateTime, fileData.highDateTime);
+            printf("%s %d %d\n", fileData.name, fileData.lowFileSize, fileData.highFileSize);
             NetworkSend_SendFileListing(clientSocket, &fileData);
         } while (FindNextFileA(findHandle, &findData) != 0);        
     } else {

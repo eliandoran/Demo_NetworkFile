@@ -48,7 +48,7 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
         
         NetworkSend_FormatFileDate(fileData.lowDateTime, fileData.highDateTime, dateTimeBuf, NETWORKSEND_DATETIME_BUF);
 
-        printf("%s %s\n", dateTimeBuf, fileData.name);
+        printf("%s %s %d %d\n", dateTimeBuf, fileData.name, fileData.lowFileSize, fileData.highFileSize);
     }
 }
 

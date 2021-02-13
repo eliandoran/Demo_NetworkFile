@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "core.h"
+#include "ls.h"
 #include "log.h"
 #include "socket.h"
 #include "request.h"
@@ -26,6 +27,16 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
         LOG_ERROR("Failed to list files on remote server: %d\n", response.status);
         return -1;
     }
+
+    // Read the file entries.
+    struct NetworkSend_FileListing fileData;
+    result = NetworkSend_ReadFileListing(connectSocket, &fileData);
+    if (result < 0) {
+        LOG_ERROR("Failed to read an entry in the file list: %d\n", result);
+        return -1;
+    }
+
+    printf("Got file entry: %s\n", fileData.name);
 }
 
 int NetworkSend_HandleConnect(SOCKET connectSocket) {

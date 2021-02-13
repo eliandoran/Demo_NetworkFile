@@ -9,6 +9,8 @@
 struct NetworkSend_FileListing {    
     int nameLength;
     char* name;
+    DWORD lowDateTime;
+    DWORD highDateTime;
 };
 
 int NetworkSend_SendFileListing(SOCKET socket, struct NetworkSend_FileListing *fileData) {
@@ -18,6 +20,8 @@ int NetworkSend_SendFileListing(SOCKET socket, struct NetworkSend_FileListing *f
     int bufLength = 0;
     bufLength += sizeof(int);                               // nameLength field
     bufLength += sizeof(char) * nameLength;                 // name field
+    bufLength += sizeof(fileData->lowDateTime);
+    bufLength += sizeof(fileData->highDateTime);
 
     // Allocate the buffer.
     char* data = (char*)malloc(bufLength);
@@ -32,6 +36,14 @@ int NetworkSend_SendFileListing(SOCKET socket, struct NetworkSend_FileListing *f
     memcpy(dataCursor, fileData->name, nameLength);
     dataCursor[nameLength] = '\0';  // ensure null-terminated string
     dataCursor += (nameLength);
+
+    // Set the lowDateTime field.
+    memcpy(dataCursor, &fileData->lowDateTime, sizeof(fileData->lowDateTime));
+    dataCursor += sizeof(fileData->lowDateTime);
+
+    // Set the highDateTime field.
+    memcpy(dataCursor, &fileData->highDateTime, sizeof(fileData->highDateTime));
+    dataCursor += sizeof(fileData->highDateTime);
 
     int result = Socket_Send(socket, data, bufLength);
     free(data);
@@ -50,6 +62,13 @@ int NetworkSend_ReadFileListing(SOCKET socket, struct NetworkSend_FileListing *f
     result = Socket_Receive(socket, name, sizeof(char) * nameLength);
     if (result <= 0) return result;
     fileData->name = name;
+
+    // Read the low/high date time fields.
+    DWORD dateFields[2];
+    result = Socket_Receive(socket, &dateFields, sizeof(dateFields));
+    if (result <= 0) return result;    
+    fileData->lowDateTime = dateFields[0];
+    fileData->highDateTime = dateFields[1];
 
     return 1;
 }
@@ -74,9 +93,16 @@ int NetworkSend_ListFiles(SOCKET clientSocket, char* path) {
 
             printf("Got file: %s\n", findData.cFileName);
 
+            // Parse file name.
             fileData.name = findData.cFileName;
             fileData.nameLength = strlen(fileData.name);
-            printf("%s\n", fileData.name);
+
+            // Parse file modification date.
+            FILETIME fileTime = findData.ftLastWriteTime;
+            fileData.lowDateTime = fileTime.dwLowDateTime;
+            fileData.highDateTime = fileTime.dwHighDateTime;
+
+            printf("%s %d %d\n", fileData.name, fileData.lowDateTime, fileData.highDateTime);
             NetworkSend_SendFileListing(clientSocket, &fileData);
         } while (FindNextFileA(findHandle, &findData) != 0);        
     } else {

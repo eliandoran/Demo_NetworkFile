@@ -43,7 +43,7 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
             return 0;
         }
 
-        printf("Got file entry: %s\n", fileData.name);
+        printf("%s %d %d\n", fileData.name, fileData.lowDateTime, fileData.highDateTime);
     }
 }
 

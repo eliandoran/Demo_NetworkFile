@@ -6,28 +6,23 @@
 
 #define LOCALE LOCALE_USER_DEFAULT
 
-char* NetworkSend_FormatDate(SYSTEMTIME *date) {
-    // Determine the size needed to fit the date.
-    int dateLength = GetDateFormatA(LOCALE, 0, date, NULL, NULL, 0);
+int NetworkSend_FormatFileDate(DWORD lowDateTime, DWORD highDateTime, char* buf, int bufSize) {
+    // Build the FILETIME from the low and high values.
+    FILETIME fileTime;
+    fileTime.dwLowDateTime = lowDateTime;
+    fileTime.dwHighDateTime = highDateTime;
 
-    // Allocate enough memory for the date.
-    char* dateStr = (char*) malloc(sizeof(char) * dateLength);
-
-    // Obtain the formatted date.
-    int result = GetDateFormatA(LOCALE, 0, date, NULL, dateStr, dateLength);
-    return dateStr;
-}
-
-char* NetworkSend_FormatFileDate(FILETIME fileTime) {
     // Convert the FILETIME to SYSTEMTIME.
     SYSTEMTIME systemTime;
-    if (!FileTimeToSystemTime(&fileTime, &systemTime)) {
-        // Format failed.
-        return NULL;
+    if (!FileTimeToSystemTime(&fileTime, &systemTime)) {        
+        return 0; // Format failed.
     }
 
-    // Format the date.
-    return NetworkSend_FormatDate(&systemTime);
+    // Format the date first.
+    if (!(GetDateFormatA(LOCALE, 0, &systemTime, NULL, buf, bufSize))) {
+        buf[0] = '\0';  // Force an empty string.
+        return 0;
+    }
 }
 
 #endif

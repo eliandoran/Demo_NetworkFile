@@ -10,6 +10,7 @@
 #include "datetime.h"
 
 #define NETWORKSEND_HOST "127.0.0.1"
+#define NETWORKSEND_DATETIME_BUF 512
 
 int NetworkSend_RequestFiles(SOCKET connectSocket) {
     int result;
@@ -31,6 +32,7 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
 
     // Read the file entries.
     struct NetworkSend_FileListing fileData;
+    char dateTimeBuf[NETWORKSEND_DATETIME_BUF];
 
     while (1) {
         result = NetworkSend_ReadFileListing(connectSocket, &fileData);
@@ -43,12 +45,10 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
             LOG("Listing stopped due to connection closing down.\n");
             return 0;
         }
+        
+        NetworkSend_FormatFileDate(fileData.lowDateTime, fileData.highDateTime, dateTimeBuf, NETWORKSEND_DATETIME_BUF);
 
-        FILETIME fileTime;
-        fileTime.dwLowDateTime = fileData.lowDateTime;
-        fileTime.dwHighDateTime = fileData.highDateTime;
-        char* dateStr = NetworkSend_FormatFileDate(fileTime);
-        printf("%s %s\n", fileData.name, dateStr);
+        printf("%s %s\n", fileData.name, dateTimeBuf);
     }
 }
 

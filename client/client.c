@@ -30,13 +30,21 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
 
     // Read the file entries.
     struct NetworkSend_FileListing fileData;
-    result = NetworkSend_ReadFileListing(connectSocket, &fileData);
-    if (result < 0) {
-        LOG_ERROR("Failed to read an entry in the file list: %d\n", result);
-        return -1;
-    }
 
-    printf("Got file entry: %s\n", fileData.name);
+    while (1) {
+        result = NetworkSend_ReadFileListing(connectSocket, &fileData);
+        if (result < 0) {
+            LOG_ERROR("Failed to read an entry in the file list: %d\n", result);
+            return -1;
+        }
+
+        if (result == 0) {
+            LOG("Listing stopped due to connection closing down.\n");
+            return 0;
+        }
+
+        printf("Got file entry: %s\n", fileData.name);
+    }
 }
 
 int NetworkSend_HandleConnect(SOCKET connectSocket) {

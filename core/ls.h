@@ -42,16 +42,16 @@ int NetworkSend_ReadFileListing(SOCKET socket, struct NetworkSend_FileListing *f
     // First, the file name length must be read, in order to know how many bytes to read in total.
     int nameLength;
     int result = Socket_Receive(socket, &nameLength, sizeof(nameLength));
-    if (result < 0) return result;
+    if (result <= 0) return result;
     fileData->nameLength = nameLength;
 
     // Read the file name.
     char* name = (char*)malloc(sizeof(char) * nameLength);
     result = Socket_Receive(socket, name, sizeof(char) * nameLength);
-    if (result < 0) return result;
+    if (result <= 0) return result;
     fileData->name = name;
 
-    return 0;
+    return 1;
 }
 
 int NetworkSend_ListFiles(SOCKET clientSocket, char* path) {

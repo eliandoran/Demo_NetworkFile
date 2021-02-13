@@ -7,6 +7,7 @@
 #include "socket.h"
 #include "request.h"
 #include "response.h"
+#include "datetime.h"
 
 #define NETWORKSEND_HOST "127.0.0.1"
 
@@ -43,7 +44,11 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
             return 0;
         }
 
-        printf("%s %d %d\n", fileData.name, fileData.lowDateTime, fileData.highDateTime);
+        FILETIME fileTime;
+        fileTime.dwLowDateTime = fileData.lowDateTime;
+        fileTime.dwHighDateTime = fileData.highDateTime;
+        char* dateStr = NetworkSend_FormatFileDate(fileTime);
+        printf("%s %s\n", fileData.name, dateStr);
     }
 }
 

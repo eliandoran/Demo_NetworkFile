@@ -12,10 +12,12 @@ struct NetworkSend_FileListing {
 };
 
 int NetworkSend_SendFileListing(SOCKET socket, struct NetworkSend_FileListing *fileData) {
+    int nameLength = (fileData->nameLength + 1);    // incl. null terminator
+
     // Determine the total buffer size needed for sending the file listing data.
     int bufLength = 0;
     bufLength += sizeof(int);                               // nameLength field
-    bufLength += sizeof(char) * (fileData->nameLength + 1); // name field w/ null terminator
+    bufLength += sizeof(char) * nameLength;                 // name field
 
     // Allocate the buffer.
     char* data = (char*)malloc(bufLength);
@@ -23,13 +25,13 @@ int NetworkSend_SendFileListing(SOCKET socket, struct NetworkSend_FileListing *f
     ZeroMemory(data, bufLength);
 
     // Set the nameLength field.
-    memcpy(dataCursor, &bufLength, sizeof(bufLength));
-    dataCursor += sizeof(bufLength);
+    memcpy(dataCursor, &nameLength, sizeof(nameLength));
+    dataCursor += sizeof(nameLength);
 
     // Set the name field.
-    memcpy(dataCursor, fileData->name, fileData->nameLength);
-    dataCursor[fileData->nameLength + 1] = '\0';
-    dataCursor += (fileData->nameLength + 1);    
+    memcpy(dataCursor, fileData->name, nameLength);
+    dataCursor[nameLength] = '\0';  // ensure null-terminated string
+    dataCursor += (nameLength);
 
     int result = Socket_Send(socket, data, bufLength);
     free(data);

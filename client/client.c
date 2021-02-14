@@ -26,9 +26,15 @@ int lastProgressTextLen = 0;
 
 void NetworkSend_DownloadFileCallback(
         unsigned long long bytesWritten,
-        unsigned long long fileSize
+        unsigned long long fileSize,
+        float averageSpeed
 ) {
-    NetworkSend_FormatTransferProgressBar(bytesWritten, fileSize, progressBuf, sizeof(progressBuf));
+    NetworkSend_FormatTransferProgressBar(
+            bytesWritten,
+            fileSize,
+            averageSpeed,
+            progressBuf,
+            sizeof(progressBuf));
     int curProgressTextLen = strlen(progressBuf);
     printf("\r%s", progressBuf);
 
@@ -154,7 +160,7 @@ int NetworkSend_HandleConnect(SOCKET connectSocket) {
     LOG("Connected to port %s:%s successfully.\n", NETWORKSEND_HOST, NETWORKSEND_PORT);
 
     //int result = NetworkSend_RequestFiles(connectSocket);
-    int result = NetworkSend_DownloadFile(connectSocket, "server.c");
+    int result = NetworkSend_DownloadFile(connectSocket, "FastInvoice.rar");
     if (result < 0) return result;
 }
 

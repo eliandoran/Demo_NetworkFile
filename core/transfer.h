@@ -108,7 +108,7 @@ int NetworkFile_ReceiveFile(
         SOCKET socket,
         char* path,
         unsigned long long fileSize,
-        void (statusCallback)(unsigned long long, unsigned long long)) {
+        void (statusCallback)(unsigned long long, unsigned long long, float)) {
     char buffer[NETWORKSEND_TRANSFER_BUFFER_SIZE];
     int bytesRead;
     DWORD bytesWritten;
@@ -126,6 +126,7 @@ int NetworkFile_ReceiveFile(
     unsigned long long lastTotalBytesWritten = 0;
     int timeBuf[5];
     int timeBufPos = 0;
+    float averageSpeed = 0;
 
     for (int i=0; i<5; i++) {
         timeBuf[i] = 0;
@@ -152,26 +153,23 @@ int NetworkFile_ReceiveFile(
                 LOG("Wrote %ul bytes.\n", bytesWritten);
 
                 if (statusCallback != NULL) {
-                    statusCallback(totalBytesWritten, fileSize);
-                }
-            }
+                    if (duration >= 133) {
+                        for (int i=0; i<5; i++) {
+                            averageSpeed += timeBuf[i];
+                        }
+                        averageSpeed /= 5;
 
-            if (duration >= 133) {
-                float averageSpeed = 0;
-                for (int i=0; i<5; i++) {
-                    averageSpeed += timeBuf[i];
+                        lastTotalBytesWritten = totalBytesWritten;
+                        lastTickCount = curTickCount;
+                        timeBuf[timeBufPos++] = speed;
+                        if (timeBufPos > 5) {
+                            timeBufPos = 0;
+                        }
+                    }
+                    
+                    statusCallback(totalBytesWritten, fileSize, averageSpeed);
                 }
-                averageSpeed /= 5;
-
-                printf("Wrote %d in %d.\n", speed, duration);
-                printf("Average speed: %.2f.\n", averageSpeed);
-                lastTotalBytesWritten = totalBytesWritten;
-                lastTickCount = curTickCount;
-                timeBuf[timeBufPos++] = speed;
-                if (timeBufPos > 5) {
-                    timeBufPos = 0;
-                }
-            }
+            }            
         }
 
         // Connection is shutting down.

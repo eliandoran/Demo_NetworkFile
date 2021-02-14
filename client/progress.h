@@ -11,6 +11,7 @@
 void NetworkSend_FormatTransferProgressBar(
     unsigned long long currentValue,
     unsigned long long totalValue,
+    float averageSpeed,
     char* buf,
     int bufSize
 ) {
@@ -32,6 +33,11 @@ void NetworkSend_FormatTransferProgressBar(
     // Display percentage of transfer.
     float percentage = ((float)currentValue / totalValue) * 100;
     buf += sprintf(buf, " (%.2f%%)", percentage);
+
+    // Display average speed.
+    li.QuadPart = (int) averageSpeed;
+    NetworkSend_FormatFileSize(li.LowPart, li.HighPart, sizeBuf, sizeof(sizeBuf));
+    buf += sprintf(buf, " avg. %s/s", sizeBuf);
 }
 
 #endif

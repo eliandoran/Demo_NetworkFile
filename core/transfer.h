@@ -96,6 +96,8 @@ int NetworkSend_TransferFile(SOCKET clientSocket, char* path) {
         if (bytesRead > 0) {
             result = Socket_Send(clientSocket, buffer, bytesRead);
             if (result < 0) return result;
+        } else {
+            return 1;
         }
     }
 
@@ -108,6 +110,11 @@ int NetworkFile_ReceiveFile(SOCKET socket, char* path) {
     
     do {
         bytesRead = Socket_Receive(socket, buffer, sizeof(buffer));
+
+        // Connection is shutting down.
+        if (bytesRead == 0) {
+            return 1;
+        }
     } while (bytesRead > 0);
 }
 

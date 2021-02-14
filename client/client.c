@@ -22,13 +22,28 @@
 
 char sizeBuf[NETWORKSEND_SIZE_BUF];
 char progressBuf[NETWORKSEND_PROGRESS_BUF];
+int lastProgressTextLen = 0;
 
 void NetworkSend_DownloadFileCallback(
         unsigned long long bytesWritten,
         unsigned long long fileSize
 ) {
     NetworkSend_FormatTransferProgressBar(bytesWritten, fileSize, progressBuf, sizeof(progressBuf));
+    int curProgressTextLen = strlen(progressBuf);
     printf("\r%s", progressBuf);
+
+    /**
+     * Since the progress is outputted on the same line as the previous ones, if the current
+     * progress has less characters than the previous one, there will be merged text. In order to
+     * fix this, a number of spaces must be added.
+     */
+    int numSpaces = (lastProgressTextLen - curProgressTextLen);
+    if (numSpaces > 0) {
+        NetworkSend_FillChar(' ', numSpaces, progressBuf, sizeof(progressBuf));
+        printf(progressBuf);
+    }
+
+    lastProgressTextLen = curProgressTextLen;
 }
 
 int NetworkSend_DownloadFile(SOCKET connectSocket, char* filePath) {

@@ -57,4 +57,12 @@ int NetworkSend_FormatFileSize(DWORD lowFileSize, DWORD highFileSize, char* buf,
     return 1;
 }
 
+void NetworkSend_FillChar(char ch, int num, char* buf, int bufSize) {
+    for (int i=0; i<num && i<bufSize - 1; i++) {
+        buf[i] = ch;
+    }
+
+    buf[num] = '\0';
+}
+
 #endif

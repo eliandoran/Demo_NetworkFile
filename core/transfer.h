@@ -6,6 +6,34 @@
 #include "response.h"
 
 #define NETWORKSEND_RESPONSE_TRANSFER_FILE_NOT_FOUND 1
+#define NETWORKSEND_RESPONSE_TRANSFER_IO_ERROR 2
+
+struct NetworkSend_TransferInfo {
+    DWORD fileSizeLow;
+    DWORD fileSizeHigh;
+};
+
+int NetworkSend_SendTransferInfo(SOCKET socket, struct NetworkSend_TransferInfo *transferInfo) {    
+    // Determine the total buffer size needed for the transfer info.
+    int bufLength = 0;
+    bufLength += sizeof(transferInfo->fileSizeLow);
+    bufLength += sizeof(transferInfo->fileSizeHigh);
+
+    // Allocate the buffer.
+    char* data = malloc(sizeof(char) * bufLength);
+    char* dataCursor = data;
+    ZeroMemory(data, bufLength);
+
+    // Set the fileSizeLow field.
+    memcpy(dataCursor, &transferInfo->fileSizeLow, sizeof(transferInfo->fileSizeHigh));
+    dataCursor += sizeof(transferInfo->fileSizeHigh);
+
+    // Set the fileSizeHigh field.
+    memcpy(dataCursor, &transferInfo->fileSizeHigh, sizeof(transferInfo->fileSizeHigh));
+    dataCursor += sizeof(transferInfo->fileSizeHigh);
+
+    return Socket_Send(socket, data, bufLength);
+}
 
 int NetworkSend_TransferFile(SOCKET clientSocket, char* path) {
     struct NetworkSend_Response response;
@@ -24,6 +52,23 @@ int NetworkSend_TransferFile(SOCKET clientSocket, char* path) {
     // Send a successful response.
     response.status = NETWORKSEND_RESPONSE_STATUS_OK;
     result = NetworkSend_SendResponse(clientSocket, &response);
+
+    // Obtain the file size.
+    DWORD fileSizeLow, fileSizeHigh;
+    fileSizeLow = GetFileSize(file, &fileSizeHigh);
+    if (fileSizeLow == INVALID_FILE_SIZE) {
+        LOG_ERROR("Unable to determine file size: %d\n", GetLastError());
+        response.status = NETWORKSEND_RESPONSE_TRANSFER_IO_ERROR;
+        result = NetworkSend_SendResponse(clientSocket, &response);
+        return result;
+    }
+
+    // Send the transfer info.
+    struct NetworkSend_TransferInfo transferInfo;
+    transferInfo.fileSizeLow = fileSizeLow;
+    transferInfo.fileSizeHigh = fileSizeHigh;
+    result = NetworkSend_SendTransferInfo(clientSocket, &transferInfo);
+
     return result;
 }
 

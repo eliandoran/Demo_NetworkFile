@@ -9,6 +9,7 @@
 #include "socket.h"
 #include "request.h"
 #include "command.h"
+#include "transfer.h"
 #include "ls.h"
 
 int NetworkSend_HandleClient(SOCKET clientSocket) {
@@ -30,6 +31,11 @@ int NetworkSend_HandleClient(SOCKET clientSocket) {
         case NETWORKSEND_REQUEST_COMMAND_LIST_FILES:
             NetworkSend_ListFiles(clientSocket, ".\\*");
             break;
+
+        case NETWORKSEND_REQUEST_COMMAND_DOWNLOAD: {
+            char* path = request.argument;
+            NetworkSend_TransferFile(clientSocket, path);
+        }
 
         default:
             LOG_ERROR("Unrecognized client command with ID %d.\n", request.commandId);

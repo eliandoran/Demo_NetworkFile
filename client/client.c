@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define LOG_QUIET
-//#define LOG_SOCKET
+//#define LOG_QUIET
+#define LOG_SOCKET
 
 #include "core.h"
 #include "ls.h"
@@ -17,11 +17,26 @@
 #define NETWORKSEND_TIME_BUF 64
 #define NETWORKSEND_SIZE_BUF 100
 
+int NetworkSend_DownloadFile(SOCKET connectSocket, char* filePath) {
+    int result;
+    struct NetworkSend_Request request;
+    request.commandId = NETWORKSEND_REQUEST_COMMAND_DOWNLOAD;
+    request.version = NETWORKSEND_REQUEST_VERSION_1;
+    request.argument = filePath;
+    request.argumentSize = strlen(filePath);
+
+    // Send the request.
+    result = NetworkSend_SendRequest(connectSocket, &request);
+    if (result < 0) return -1;
+}
+
 int NetworkSend_RequestFiles(SOCKET connectSocket) {
     int result;
     struct NetworkSend_Request request;
     request.commandId = NETWORKSEND_REQUEST_COMMAND_LIST_FILES;
     request.version = NETWORKSEND_REQUEST_VERSION_1;
+    request.argument = NULL;
+    request.argumentSize = 0;
 
     // Send the request.
     result = NetworkSend_SendRequest(connectSocket, &request);
@@ -67,7 +82,8 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
 int NetworkSend_HandleConnect(SOCKET connectSocket) {
     LOG("Connected to port %s:%s successfully.\n", NETWORKSEND_HOST, NETWORKSEND_PORT);
 
-    int result = NetworkSend_RequestFiles(connectSocket);
+    //int result = NetworkSend_RequestFiles(connectSocket);
+    int result = NetworkSend_DownloadFile(connectSocket, "hello.c");
     if (result < 0) return result;
 }
 

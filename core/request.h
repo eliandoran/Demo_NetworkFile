@@ -5,19 +5,35 @@
 #include "socket.h"
 
 #define NETWORKSEND_REQUEST_COMMAND_LIST_FILES 0
+#define NETWORKSEND_REQUEST_COMMAND_DOWNLOAD 1
 
 #define NETWORKSEND_REQUEST_VERSION_1 1
 
 struct NetworkSend_Request {
     char version;
     char commandId;
+    char argumentSize;
+    char* argument;
 };
 
 int NetworkSend_SendRequest(SOCKET socket, struct NetworkSend_Request *request) {
-    char data[2];
+    int bufLength = 0;
+    bufLength += sizeof(request->version);
+    bufLength += sizeof(request->commandId);
+    bufLength += sizeof(request->argumentSize);
+    if (request->argumentSize > 0) {
+        bufLength += sizeof(char) * (request->argumentSize + 1);
+    }
+
+    char *data = (char*)malloc(bufLength);
     data[0] = request->version;
     data[1] = request->commandId;
-    return Socket_Send(socket, data, sizeof(data));
+    data[2] = request->argumentSize;
+    if (request->argumentSize > 0) {
+        strncpy(data + 3, request->argument, request->argumentSize);
+        data[bufLength - 1] = '\0';
+    }
+    return Socket_Send(socket, data, bufLength);
 }
 
 int NetworkSend_ReadRequest(SOCKET socket, struct NetworkSend_Request *request) {

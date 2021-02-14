@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//#define LOG_QUIET
-#define LOG_SOCKET
+#define LOG_QUIET
+//#define LOG_SOCKET
 
 #include "core.h"
 #include "ls.h"
@@ -18,10 +18,25 @@
 #define NETWORKSEND_TIME_BUF 64
 #define NETWORKSEND_SIZE_BUF 100
 
+char sizeBuf[NETWORKSEND_SIZE_BUF];
+
 void NetworkSend_DownloadFileCallback(
-        unsigned long long fileSize,
-        unsigned long long bytesWritten) {
-    printf("DOWNLOAD: %llu / %llu\n", bytesWritten, fileSize);
+        unsigned long long bytesWritten,
+        unsigned long long fileSize
+) {
+
+    printf("DOWNLOAD ");
+
+    // Calculate 
+    LARGE_INTEGER li;
+    li.QuadPart = bytesWritten;
+
+    NetworkSend_FormatFileSize(li.LowPart, li.HighPart, sizeBuf, sizeof(sizeBuf));
+    printf("%s / ", sizeBuf);
+
+    li.QuadPart = fileSize;
+    NetworkSend_FormatFileSize(li.LowPart, li.HighPart, sizeBuf, sizeof(sizeBuf));
+    printf("%s\n", sizeBuf);
 }
 
 int NetworkSend_DownloadFile(SOCKET connectSocket, char* filePath) {
@@ -61,7 +76,6 @@ int NetworkSend_DownloadFile(SOCKET connectSocket, char* filePath) {
     if (result < 0) return -1;
 
     // Display the file size of the remote file.
-    char sizeBuf[NETWORKSEND_SIZE_BUF];
     result = NetworkSend_FormatFileSize(transferInfo.fileSizeLow, transferInfo.fileSizeHigh, sizeBuf, sizeof(sizeBuf));
     if (result) {
         LOG("Downloading file \"%s\" of size %s...\n", filePath, sizeBuf);
@@ -104,8 +118,7 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
     // Read the file entries.
     struct NetworkSend_FileListing fileData;
     char dateBuf[NETWORKSEND_DATE_BUF],
-         timeBuf[NETWORKSEND_TIME_BUF],
-         sizeBuf[NETWORKSEND_SIZE_BUF];
+         timeBuf[NETWORKSEND_TIME_BUF];
     int numFiles = 0;
 
     while (1) {

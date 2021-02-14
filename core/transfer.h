@@ -8,7 +8,7 @@
 #define NETWORKSEND_RESPONSE_TRANSFER_FILE_NOT_FOUND 1
 #define NETWORKSEND_RESPONSE_TRANSFER_IO_ERROR 2
 
-#define NETWORKSEND_TRANSFER_BUFFER_SIZE 16
+#define NETWORKSEND_TRANSFER_BUFFER_SIZE 2048
 
 struct NetworkSend_TransferInfo {
     DWORD fileSizeLow;
@@ -122,6 +122,15 @@ int NetworkFile_ReceiveFile(
         return -1;
     }
 
+    DWORD lastTickCount = GetTickCount();
+    unsigned long long lastTotalBytesWritten = 0;
+    int timeBuf[5];
+    int timeBufPos = 0;
+
+    for (int i=0; i<5; i++) {
+        timeBuf[i] = 0;
+    }
+
     do {
         LOG("----\n");
         bytesRead = Socket_Receive(socket, buffer, sizeof(buffer));
@@ -130,6 +139,11 @@ int NetworkFile_ReceiveFile(
         if (bytesRead > 0) {
             // Write to file.
             int result = WriteFile(file, buffer, bytesRead, &bytesWritten, NULL);
+
+            DWORD curTickCount = GetTickCount();
+            int speed = (totalBytesWritten - lastTotalBytesWritten);
+            int duration = curTickCount - lastTickCount;
+
             if (!result) {
                 LOG_ERROR("I/O error: %d\n", GetLastError());
                 return -1;
@@ -139,6 +153,23 @@ int NetworkFile_ReceiveFile(
 
                 if (statusCallback != NULL) {
                     statusCallback(totalBytesWritten, fileSize);
+                }
+            }
+
+            if (duration >= 133) {
+                float averageSpeed = 0;
+                for (int i=0; i<5; i++) {
+                    averageSpeed += timeBuf[i];
+                }
+                averageSpeed /= 5;
+
+                printf("Wrote %d in %d.\n", speed, duration);
+                printf("Average speed: %.2f.\n", averageSpeed);
+                lastTotalBytesWritten = totalBytesWritten;
+                lastTickCount = curTickCount;
+                timeBuf[timeBufPos++] = speed;
+                if (timeBufPos > 5) {
+                    timeBufPos = 0;
                 }
             }
         }

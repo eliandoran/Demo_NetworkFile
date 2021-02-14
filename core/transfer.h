@@ -152,21 +152,19 @@ int NetworkFile_ReceiveFile(
                 totalBytesWritten += bytesWritten;
                 LOG("Wrote %ul bytes.\n", bytesWritten);
 
-                if (statusCallback != NULL) {
-                    if (duration >= 133) {
-                        for (int i=0; i<5; i++) {
-                            averageSpeed += timeBuf[i];
-                        }
-                        averageSpeed /= 5;
-
-                        lastTotalBytesWritten = totalBytesWritten;
-                        lastTickCount = curTickCount;
-                        timeBuf[timeBufPos++] = speed;
-                        if (timeBufPos > 5) {
-                            timeBufPos = 0;
-                        }
+                if (statusCallback != NULL && duration >= 133) {
+                    for (int i=0; i<5; i++) {
+                        averageSpeed += timeBuf[i];
                     }
-                    
+                    averageSpeed /= 5;
+
+                    lastTotalBytesWritten = totalBytesWritten;
+                    lastTickCount = curTickCount;
+                    timeBuf[timeBufPos++] = speed;
+                    if (timeBufPos > 5) {
+                        timeBufPos = 0;
+                    }
+
                     statusCallback(totalBytesWritten, fileSize, averageSpeed);
                 }
             }            

@@ -1,7 +1,7 @@
 #ifndef LS_H_DEFINED
 #define LS_H_DEFINED
 
-#define NETWORKSEND_FILE_BUF_COUNT 3
+#define NETWORKSEND_FILE_BUF_COUNT 100
 #define NETWORKSEND_FILE_MAX_NAME MAX_PATH
 
 #include <stdio.h>
@@ -146,7 +146,7 @@ int NetworkSend_ListFiles(SOCKET clientSocket, char* path) {
 
         // Send the remainder of the buffer, if any.
         if (curBufIndex > 0) {
-            NetworkSend_SendMultipleFileListings(clientSocket, filesData, NETWORKSEND_FILE_BUF_COUNT - curBufIndex + 1);
+            NetworkSend_SendMultipleFileListings(clientSocket, filesData, curBufIndex);
         }    
     } else {
         // Unable to open handle for file search.

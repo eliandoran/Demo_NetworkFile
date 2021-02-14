@@ -21,7 +21,7 @@ int NetworkSend_HandleClient(SOCKET clientSocket) {
     result = NetworkSend_ReadRequest(clientSocket, &request);
     if (result < 0) return result;
 
-    LOG("Got request from client w/ version #%d and command: %d.\n", request.version, request.commandId);
+    LOG("%d CMD: %d ARG: %s.\n", request.version, request.commandId, request.argument);
     
     switch (request.commandId) {
         case NETWORKSEND_REQUEST_COMMAND_LIST_FILES:

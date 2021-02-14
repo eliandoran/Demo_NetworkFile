@@ -37,12 +37,25 @@ int NetworkSend_SendRequest(SOCKET socket, struct NetworkSend_Request *request) 
 }
 
 int NetworkSend_ReadRequest(SOCKET socket, struct NetworkSend_Request *request) {
-    char data[2];
+    char data[3];
     int num = Socket_Receive(socket, data, sizeof(data));
-    if (num == sizeof(data)) {
-        request->version = data[0];
-        request->commandId = data[1];
+    if (num != sizeof(data)) return -1;
+
+    request->version = data[0];
+    request->commandId = data[1];
+    request->argumentSize = data[2];
+
+    // Read the arguments, if any.
+    if (request->argumentSize > 0) {
+        int argumentSize = request->argumentSize + 1;
+        char* argBuf = (char*) malloc(sizeof(char) * argumentSize);
+        num = Socket_Receive(socket, argBuf, argumentSize);
+        if (num != argumentSize) return -1;
+        request->argument = argBuf;
+    } else {
+        request->argument = NULL;
     }
+
     return num;
 }
 

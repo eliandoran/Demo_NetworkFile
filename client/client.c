@@ -40,6 +40,7 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
     char dateBuf[NETWORKSEND_DATE_BUF],
          timeBuf[NETWORKSEND_TIME_BUF],
          sizeBuf[NETWORKSEND_SIZE_BUF];
+    int numFiles = 0;
 
     while (1) {
         result = NetworkSend_ReadFileListing(connectSocket, &fileData);
@@ -50,6 +51,7 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
 
         if (result == 0) {
             LOG("Listing stopped due to connection closing down.\n");
+            printf("\n%d files.", numFiles);
             return 0;
         }
         
@@ -58,7 +60,8 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
         NetworkSend_FormatFileSize(fileData.lowFileSize, fileData.highFileSize, sizeBuf, NETWORKSEND_SIZE_BUF);
 
         printf("%s  %s\t %s\t %s\n", dateBuf, timeBuf, sizeBuf, fileData.name);
-    }
+        numFiles++;
+    }    
 }
 
 int NetworkSend_HandleConnect(SOCKET connectSocket) {

@@ -28,6 +28,7 @@ void NetworkSend_DownloadFileCallback(
     printf("DOWNLOAD ");
 
     // Calculate 
+    float percentage = ((float)bytesWritten / fileSize) * 100;
     LARGE_INTEGER li;
     li.QuadPart = bytesWritten;
 
@@ -36,7 +37,7 @@ void NetworkSend_DownloadFileCallback(
 
     li.QuadPart = fileSize;
     NetworkSend_FormatFileSize(li.LowPart, li.HighPart, sizeBuf, sizeof(sizeBuf));
-    printf("%s\n", sizeBuf);
+    printf("%s (%.2f%%)\n", sizeBuf, percentage);
 }
 
 int NetworkSend_DownloadFile(SOCKET connectSocket, char* filePath) {

@@ -1,6 +1,9 @@
 #ifndef LS_H_DEFINED
 #define LS_H_DEFINED
 
+#define NETWORKSEND_FILE_BUF_COUNT 2
+#define NETWORKSEND_FILE_MAX_NAME MAX_PATH
+
 #include <stdio.h>
 #include "core.h"
 #include "socket.h"
@@ -15,54 +18,66 @@ struct NetworkSend_FileListing {
     DWORD highFileSize;
 };
 
-int NetworkSend_SendFileListing(SOCKET socket, struct NetworkSend_FileListing *fileData) {
-    int nameLength = (fileData->nameLength + 1);    // incl. null terminator
-
+int NetworkSend_SendMultipleFileListings(SOCKET socket, struct NetworkSend_FileListing *filesData, int numFiles) {
     // Determine the total buffer size needed for sending the file listing data.
     int bufLength = 0;
-    bufLength += sizeof(int);                               // nameLength field
-    bufLength += sizeof(char) * nameLength;                 // name field
-    bufLength += sizeof(fileData->lowDateTime);
-    bufLength += sizeof(fileData->highDateTime);
-    bufLength += sizeof(fileData->lowFileSize);
-    bufLength += sizeof(fileData->highFileSize);
+    for (int i=0; i<numFiles; i++) {
+        struct NetworkSend_FileListing* fileData = &filesData[i];
+        int nameLength = (fileData->nameLength + 1);    // incl. null terminator
+        
+        bufLength += sizeof(int);                               // nameLength field
+        bufLength += sizeof(char) * nameLength;                 // name field
+        bufLength += sizeof(fileData->lowDateTime);
+        bufLength += sizeof(fileData->highDateTime);
+        bufLength += sizeof(fileData->lowFileSize);
+        bufLength += sizeof(fileData->highFileSize);
+    }
+
+    printf("Alloc %d %d\n", bufLength, numFiles);
 
     // Allocate the buffer.
-    char* data = (char*)malloc(bufLength);
+    char* data = malloc(sizeof(char) * bufLength);    
     char* dataCursor = data;
     ZeroMemory(data, bufLength);
 
-    // Set the nameLength field.
-    memcpy(dataCursor, &nameLength, sizeof(nameLength));
-    dataCursor += sizeof(nameLength);
+    for (int i=0; i<numFiles; i++) {
+        printf("Index: %d\n", i);
+        struct NetworkSend_FileListing* fileData = &filesData[i];
+        int nameLength = (fileData->nameLength + 1);    // incl. null terminator
+        printf("Name length: %d\n", nameLength);
 
-    // Set the name field.
-    memcpy(dataCursor, fileData->name, nameLength);
-    dataCursor[nameLength] = '\0';  // ensure null-terminated string
-    dataCursor += (nameLength);
+        // Set the nameLength field.
+        memcpy(dataCursor, &nameLength, sizeof(nameLength));
+        dataCursor += sizeof(nameLength);
 
-    // Set the lowDateTime field.
-    memcpy(dataCursor, &fileData->lowDateTime, sizeof(fileData->lowDateTime));
-    dataCursor += sizeof(fileData->lowDateTime);
+        // Set the name field.
+        memcpy(dataCursor, fileData->name, nameLength);
+        dataCursor[nameLength] = '\0';  // ensure null-terminated string
+        dataCursor += (nameLength);
 
-    // Set the highDateTime field.
-    memcpy(dataCursor, &fileData->highDateTime, sizeof(fileData->highDateTime));
-    dataCursor += sizeof(fileData->highDateTime);
+        // Set the lowDateTime field.
+        memcpy(dataCursor, &fileData->lowDateTime, sizeof(fileData->lowDateTime));
+        dataCursor += sizeof(fileData->lowDateTime);
 
-    // Set the lowFileSize field.
-    memcpy(dataCursor, &fileData->lowFileSize, sizeof(fileData->lowFileSize));
-    dataCursor += sizeof(fileData->lowFileSize);
+        // Set the highDateTime field.
+        memcpy(dataCursor, &fileData->highDateTime, sizeof(fileData->highDateTime));
+        dataCursor += sizeof(fileData->highDateTime);
 
-    // Set the highFileSize field.
-    memcpy(dataCursor, &fileData->highFileSize, sizeof(fileData->highFileSize));
-    dataCursor += sizeof(fileData->highFileSize);
+        // Set the lowFileSize field.
+        memcpy(dataCursor, &fileData->lowFileSize, sizeof(fileData->lowFileSize));
+        dataCursor += sizeof(fileData->lowFileSize);
+
+        // Set the highFileSize field.
+        memcpy(dataCursor, &fileData->highFileSize, sizeof(fileData->highFileSize));
+        dataCursor += sizeof(fileData->highFileSize);
+    }    
 
     int result = Socket_Send(socket, data, bufLength);
     free(data);
     return result;
 }
 
-int NetworkSend_ReadFileListing(SOCKET socket, struct NetworkSend_FileListing *fileData) {
+int NetworkSend_ReadFileListing(SOCKET socket, struct NetworkSend_FileListing fileData[]) {
     // First, the file name length must be read, in order to know how many bytes to read in total.
     int nameLength;
     int result = Socket_Receive(socket, &nameLength, sizeof(nameLength));
@@ -89,9 +104,15 @@ int NetworkSend_ReadFileListing(SOCKET socket, struct NetworkSend_FileListing *f
 
 int NetworkSend_ListFiles(SOCKET clientSocket, char* path) {
     struct NetworkSend_Response response;
-    struct NetworkSend_FileListing fileData;
+    struct NetworkSend_FileListing *filesData = (struct NetworkSend_FileListing*)malloc(sizeof(struct NetworkSend_FileListing) * NETWORKSEND_FILE_BUF_COUNT);
+    int curBufIndex = 0;
     WIN32_FIND_DATAA findData;
     HANDLE findHandle = FindFirstFileA(path, &findData);
+
+    // Initialize the name string for the file data.
+    for (int i=0; i<NETWORKSEND_FILE_BUF_COUNT; i++) {
+        filesData[i].name = (char*)malloc(sizeof(char) * NETWORKSEND_FILE_MAX_NAME);
+    }
 
     if (findHandle != INVALID_HANDLE_VALUE) {
         // Send an OK response.
@@ -105,23 +126,26 @@ int NetworkSend_ListFiles(SOCKET clientSocket, char* path) {
             if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
                 continue;
 
-            printf("Got file: %s\n", findData.cFileName);
-
             // Parse file name.
-            fileData.name = findData.cFileName;
-            fileData.nameLength = strlen(fileData.name);
+            strncpy(filesData[curBufIndex].name, findData.cFileName, (NETWORKSEND_FILE_MAX_NAME - 1));
+            filesData[curBufIndex].nameLength = strlen(filesData[curBufIndex].name);
 
             // Parse file modification date.
             FILETIME fileTime = findData.ftLastWriteTime;
-            fileData.lowDateTime = fileTime.dwLowDateTime;
-            fileData.highDateTime = fileTime.dwHighDateTime;
+            filesData[curBufIndex].lowDateTime = fileTime.dwLowDateTime;
+            filesData[curBufIndex].highDateTime = fileTime.dwHighDateTime;
 
             // Parse file size.
-            fileData.lowFileSize = findData.nFileSizeLow;
-            fileData.highFileSize = findData.nFileSizeHigh;
+            filesData[curBufIndex].lowFileSize = findData.nFileSizeLow;
+            filesData[curBufIndex].highFileSize = findData.nFileSizeHigh;
 
-            printf("%s %d %d\n", fileData.name, fileData.lowFileSize, fileData.highFileSize);
-            NetworkSend_SendFileListing(clientSocket, &fileData);
+            printf("%d %s %d %d\n", curBufIndex, filesData[curBufIndex].name, filesData[curBufIndex].lowFileSize, filesData[curBufIndex].highFileSize);
+
+            curBufIndex++;
+            if (curBufIndex >= NETWORKSEND_FILE_BUF_COUNT) {
+                NetworkSend_SendMultipleFileListings(clientSocket, filesData, NETWORKSEND_FILE_BUF_COUNT);
+                curBufIndex = 0;
+            }
         } while (FindNextFileA(findHandle, &findData) != 0);        
     } else {
         // Unable to open handle for file search.

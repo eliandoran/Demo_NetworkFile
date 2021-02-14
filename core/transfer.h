@@ -8,6 +8,8 @@
 #define NETWORKSEND_RESPONSE_TRANSFER_FILE_NOT_FOUND 1
 #define NETWORKSEND_RESPONSE_TRANSFER_IO_ERROR 2
 
+#define NETWORKSEND_TRANSFER_BUFFER_SIZE 16
+
 struct NetworkSend_TransferInfo {
     DWORD fileSizeLow;
     DWORD fileSizeHigh;
@@ -78,6 +80,16 @@ int NetworkSend_TransferFile(SOCKET clientSocket, char* path) {
     transferInfo.fileSizeLow = fileSizeLow;
     transferInfo.fileSizeHigh = fileSizeHigh;
     result = NetworkSend_SendTransferInfo(clientSocket, &transferInfo);
+    if (result < 0) return result;
+
+    // Transfer the actual file.
+    char buffer[NETWORKSEND_TRANSFER_BUFFER_SIZE];
+    DWORD bytesRead = 0;
+    result = ReadFile(file, buffer, sizeof(buffer), &bytesRead, NULL);
+    if (!result) return result;
+
+    result = Socket_Send(clientSocket, buffer, sizeof(buffer));
+    if (result < 0) return result;
 
     return result;
 }

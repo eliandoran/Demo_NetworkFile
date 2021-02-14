@@ -49,7 +49,19 @@ int NetworkSend_DownloadFile(SOCKET connectSocket, char* filePath) {
             return result;
     }
 
-    return result;
+    // Since the response was OK, read the file transfer info.
+    struct NetworkSend_TransferInfo transferInfo;
+    result = NetworkSend_ReadTransferInfo(connectSocket, &transferInfo);
+    if (result < 0) return -1;
+
+    // Display the file size of the remote file.
+    char sizeBuf[NETWORKSEND_SIZE_BUF];
+    result = NetworkSend_FormatFileSize(transferInfo.fileSizeLow, transferInfo.fileSizeHigh, sizeBuf, sizeof(sizeBuf));
+    if (result) {
+        LOG("Downloading file \"%s\" of size %s...\n", filePath, sizeBuf);
+    }
+
+    return 0;
 }
 
 int NetworkSend_RequestFiles(SOCKET connectSocket) {

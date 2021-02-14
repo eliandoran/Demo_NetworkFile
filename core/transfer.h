@@ -35,6 +35,16 @@ int NetworkSend_SendTransferInfo(SOCKET socket, struct NetworkSend_TransferInfo 
     return Socket_Send(socket, data, bufLength);
 }
 
+int NetworkSend_ReadTransferInfo(SOCKET socket, struct NetworkSend_TransferInfo *transferInfo) {
+    DWORD fields[2];
+    int result = Socket_Receive(socket, &fields, sizeof(fields));
+    if (result <= 0) return result;
+
+    transferInfo->fileSizeLow = fields[0];
+    transferInfo->fileSizeHigh = fields[1];
+    return 1;
+}
+
 int NetworkSend_TransferFile(SOCKET clientSocket, char* path) {
     struct NetworkSend_Response response;
     int result;

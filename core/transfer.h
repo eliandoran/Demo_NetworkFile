@@ -55,7 +55,7 @@ int NetworkSend_TransferFile(SOCKET clientSocket, char* path) {
     // Check for file opening errors.
     int lastError = GetLastError();
     if (lastError != 0) {
-        LOG_ERROR("Unable to open file: %d\n", lastError);
+        LOG_ERROR("Unable to open file for read: %d\n", lastError);
         response.status = NETWORKSEND_RESPONSE_TRANSFER_FILE_NOT_FOUND;
         result = NetworkSend_SendResponse(clientSocket, &response);
         return result;
@@ -107,12 +107,35 @@ int NetworkSend_TransferFile(SOCKET clientSocket, char* path) {
 int NetworkFile_ReceiveFile(SOCKET socket, char* path) {
     char buffer[NETWORKSEND_TRANSFER_BUFFER_SIZE];
     int bytesRead;
+    DWORD bytesWritten;
+    HANDLE file = CreateFileA(path, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
     
+    // Check if file opened successfully for creation.
+    int lastError = GetLastError();
+    if (lastError != 0) {
+        LOG_ERROR("Unable to open file for write: %d\n.", lastError);
+        return -1;
+    }
+
     do {
+        LOG("----\n");
         bytesRead = Socket_Receive(socket, buffer, sizeof(buffer));
+        LOG("Read %d bytes.\n", bytesRead);
+
+        if (bytesRead > 0) {
+            // Write to file.
+            int result = WriteFile(file, buffer, bytesRead, &bytesWritten, NULL);
+            if (!result) {
+                LOG_ERROR("I/O error: %d\n", GetLastError());
+                return -1;
+            } else {
+                LOG("Wrote %ul bytes.\n", bytesWritten);
+            }
+        }
 
         // Connection is shutting down.
         if (bytesRead == 0) {
+            LOG("Connection is shutting down...\n");
             return 1;
         }
     } while (bytesRead > 0);

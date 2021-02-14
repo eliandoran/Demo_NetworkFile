@@ -116,6 +116,10 @@ int NetworkSend_ListFiles(SOCKET clientSocket, char* path) {
             fileData.lowDateTime = fileTime.dwLowDateTime;
             fileData.highDateTime = fileTime.dwHighDateTime;
 
+            // Parse file size.
+            fileData.lowFileSize = findData.nFileSizeLow;
+            fileData.highFileSize = findData.nFileSizeHigh;
+
             printf("%s %d %d\n", fileData.name, fileData.lowFileSize, fileData.highFileSize);
             NetworkSend_SendFileListing(clientSocket, &fileData);
         } while (FindNextFileA(findHandle, &findData) != 0);        

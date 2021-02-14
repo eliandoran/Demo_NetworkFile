@@ -1,8 +1,8 @@
-#ifndef DATE_TIME_H
-#define DATE_TIME_H
+#ifndef FORMAT_H
+#define FORMAT_H
 
 #include <windows.h>
-#include <stdio.h>
+#include <shlwapi.h>
 
 #define LOCALE LOCALE_USER_DEFAULT
 
@@ -32,6 +32,15 @@ int NetworkSend_FormatFileDate(DWORD lowDateTime, DWORD highDateTime, char* buf,
 
     // Format the time second.
     if (!(GetTimeFormatA(LOCALE, 0, &systemTime, NULL, buf, bufSize))) {
+        buf[0] = '\0'; // Force an empty string.
+        return 0;
+    }
+
+    return 1;
+}
+
+int NetworkSend_FormatFileSize(DWORD lowFileSize, DWORD highFileSize, char* buf, int bufSize) {
+    if (!StrFormatByteSizeA(lowFileSize, buf, bufSize)) {
         buf[0] = '\0'; // Force an empty string.
         return 0;
     }

@@ -7,10 +7,11 @@
 #include "socket.h"
 #include "request.h"
 #include "response.h"
-#include "datetime.h"
+#include "format.h"
 
 #define NETWORKSEND_HOST "127.0.0.1"
 #define NETWORKSEND_DATETIME_BUF 512
+#define NETWORKSEND_SIZE_BUF 100
 
 int NetworkSend_RequestFiles(SOCKET connectSocket) {
     int result;
@@ -33,6 +34,7 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
     // Read the file entries.
     struct NetworkSend_FileListing fileData;
     char dateTimeBuf[NETWORKSEND_DATETIME_BUF];
+    char sizeBuf[NETWORKSEND_SIZE_BUF];
 
     while (1) {
         result = NetworkSend_ReadFileListing(connectSocket, &fileData);
@@ -47,8 +49,9 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
         }
         
         NetworkSend_FormatFileDate(fileData.lowDateTime, fileData.highDateTime, dateTimeBuf, NETWORKSEND_DATETIME_BUF);
+        NetworkSend_FormatFileSize(fileData.lowFileSize, fileData.highFileSize, sizeBuf, NETWORKSEND_SIZE_BUF);
 
-        printf("%s %s %d %d\n", dateTimeBuf, fileData.name, fileData.lowFileSize, fileData.highFileSize);
+        printf("%s %s %s\n", dateTimeBuf, fileData.name, sizeBuf);
     }
 }
 

@@ -85,13 +85,30 @@ int NetworkSend_TransferFile(SOCKET clientSocket, char* path) {
     // Transfer the actual file.
     char buffer[NETWORKSEND_TRANSFER_BUFFER_SIZE];
     DWORD bytesRead = 0;
-    result = ReadFile(file, buffer, sizeof(buffer), &bytesRead, NULL);
-    if (!result) return result;
 
-    result = Socket_Send(clientSocket, buffer, sizeof(buffer));
-    if (result < 0) return result;
+    while (1) {
+        result = ReadFile(file, buffer, sizeof(buffer), &bytesRead, NULL);
+        if (!result) {
+            LOG_ERROR("Read error for \"%s\": %d\n", path, GetLastError());
+            return result;
+        }
+
+        if (bytesRead > 0) {
+            result = Socket_Send(clientSocket, buffer, bytesRead);
+            if (result < 0) return result;
+        }
+    }
 
     return result;
+}
+
+int NetworkFile_ReceiveFile(SOCKET socket, char* path) {
+    char buffer[NETWORKSEND_TRANSFER_BUFFER_SIZE];
+    int bytesRead;
+    
+    do {
+        bytesRead = Socket_Receive(socket, buffer, sizeof(buffer));
+    } while (bytesRead > 0);
 }
 
 #endif

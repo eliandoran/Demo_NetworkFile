@@ -61,6 +61,14 @@ int NetworkSend_DownloadFile(SOCKET connectSocket, char* filePath) {
         LOG("Downloading file \"%s\" of size %s...\n", filePath, sizeBuf);
     }
 
+    result = NetworkFile_ReceiveFile(connectSocket, filePath);
+    if (!result) {
+        LOG_ERROR("Unable to complete transfer: %d.\n", result);
+        return;
+    }
+
+    LOG("Transfer completed successfully.\n");
+
     return 0;
 }
 

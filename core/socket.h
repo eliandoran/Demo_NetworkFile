@@ -163,7 +163,7 @@ int Socket_Receive(SOCKET socket, void* buffer, int bufferLen) {
             return -1;
         } else if (num == 0) {
             LOG("Connection closing...\n");
-            return 0;
+            return received;
         }
 
         #ifdef LOG_SOCKET

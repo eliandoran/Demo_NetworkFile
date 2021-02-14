@@ -24,8 +24,15 @@ void NetworkSend_DownloadFileCallback(
         unsigned long long bytesWritten,
         unsigned long long fileSize
 ) {
+    // Reuse the same line for showing progress.
+    printf("\r");
 
-    printf("DOWNLOAD ");
+    // Blank the current line first.
+    for (int i=0; i<50; i++) {
+        printf(" ");
+    }
+ 
+    printf("\rDOWNLOAD ");
 
     // Calculate 
     float percentage = ((float)bytesWritten / fileSize) * 100;
@@ -37,7 +44,7 @@ void NetworkSend_DownloadFileCallback(
 
     li.QuadPart = fileSize;
     NetworkSend_FormatFileSize(li.LowPart, li.HighPart, sizeBuf, sizeof(sizeBuf));
-    printf("%s (%.2f%%)\n", sizeBuf, percentage);
+    printf("%s (%.2f%%)", sizeBuf, percentage);
 }
 
 int NetworkSend_DownloadFile(SOCKET connectSocket, char* filePath) {

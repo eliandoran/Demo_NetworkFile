@@ -142,6 +142,11 @@ int NetworkFile_ReceiveFile(
             // Write to file.
             int result = WriteFile(file, buffer, bytesRead, &bytesWritten, NULL);
 
+            if (bytesRead != bytesWritten) {
+                LOG_ERROR("I/O error, mismatched read/write.\n");
+                return -1;
+            }
+
             DWORD curTickCount = GetTickCount();
             int speed = (totalBytesWritten - lastTotalBytesWritten);
             int duration = curTickCount - lastTickCount;

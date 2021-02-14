@@ -24,7 +24,7 @@ int NetworkSend_HandleClient(SOCKET clientSocket) {
     char commandName[NETWORKSEND_REQUEST_COMMAND_TEXT_BUFSIZE];
     NetworkSend_GetCommandTextFromId(request.commandId, commandName, sizeof(commandName));
 
-    LOG("%d CMD: %s ARG: %s.\n", request.version, commandName, request.argument);
+    LOG_ACCESS("[v%d] %s %s\n", request.version, commandName, request.argument);
     
     switch (request.commandId) {
         case NETWORKSEND_REQUEST_COMMAND_LIST_FILES:
@@ -32,7 +32,7 @@ int NetworkSend_HandleClient(SOCKET clientSocket) {
             break;
 
         default:
-            LOG_ERROR("Unrecognized client command: %d\n.", request.commandId);
+            LOG_ERROR("Unrecognized client command with ID %d.\n", request.commandId);
             return -1;
     }
 }

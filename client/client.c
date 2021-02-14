@@ -13,7 +13,8 @@
 #include "format.h"
 
 #define NETWORKSEND_HOST "127.0.0.1"
-#define NETWORKSEND_DATETIME_BUF 512
+#define NETWORKSEND_DATE_BUF 128
+#define NETWORKSEND_TIME_BUF 64
 #define NETWORKSEND_SIZE_BUF 100
 
 int NetworkSend_RequestFiles(SOCKET connectSocket) {
@@ -36,8 +37,9 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
 
     // Read the file entries.
     struct NetworkSend_FileListing fileData;
-    char dateTimeBuf[NETWORKSEND_DATETIME_BUF];
-    char sizeBuf[NETWORKSEND_SIZE_BUF];
+    char dateBuf[NETWORKSEND_DATE_BUF],
+         timeBuf[NETWORKSEND_TIME_BUF],
+         sizeBuf[NETWORKSEND_SIZE_BUF];
 
     while (1) {
         result = NetworkSend_ReadFileListing(connectSocket, &fileData);
@@ -51,10 +53,11 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
             return 0;
         }
         
-        NetworkSend_FormatFileDate(fileData.lowDateTime, fileData.highDateTime, dateTimeBuf, NETWORKSEND_DATETIME_BUF);
+        NetworkSend_FormatFileDate(fileData.lowDateTime, fileData.highDateTime, dateBuf, NETWORKSEND_DATE_BUF);
+        NetworkSend_FormatFileTime(fileData.lowDateTime, fileData.highDateTime, timeBuf, NETWORKSEND_TIME_BUF);
         NetworkSend_FormatFileSize(fileData.lowFileSize, fileData.highFileSize, sizeBuf, NETWORKSEND_SIZE_BUF);
 
-        printf("%s %s %s\n", dateTimeBuf, fileData.name, sizeBuf);
+        printf("%s  %s\t %s\t %s\n", dateBuf, timeBuf, sizeBuf, fileData.name);
     }
 }
 

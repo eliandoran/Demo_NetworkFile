@@ -10,7 +10,7 @@
 #include "response.h"
 
 struct NetworkSend_FileListing {    
-    int nameLength;
+    char nameLength;
     char* name;
     DWORD lowDateTime;
     DWORD highDateTime;
@@ -23,9 +23,9 @@ int NetworkSend_SendMultipleFileListings(SOCKET socket, struct NetworkSend_FileL
     int bufLength = 0;
     for (int i=0; i<numFiles; i++) {
         struct NetworkSend_FileListing* fileData = &filesData[i];
-        int nameLength = (fileData->nameLength + 1);    // incl. null terminator
+        char nameLength = (fileData->nameLength + 1);    // incl. null terminator
         
-        bufLength += sizeof(int);                               // nameLength field
+        bufLength += sizeof(nameLength);
         bufLength += sizeof(char) * nameLength;                 // name field
         bufLength += sizeof(fileData->lowDateTime);
         bufLength += sizeof(fileData->highDateTime);
@@ -40,7 +40,7 @@ int NetworkSend_SendMultipleFileListings(SOCKET socket, struct NetworkSend_FileL
 
     for (int i=0; i<numFiles; i++) {
         struct NetworkSend_FileListing* fileData = &filesData[i];
-        int nameLength = (fileData->nameLength + 1);    // incl. null terminator
+        char nameLength = (fileData->nameLength + 1);    // incl. null terminator
 
         // Set the nameLength field.
         memcpy(dataCursor, &nameLength, sizeof(nameLength));
@@ -75,7 +75,7 @@ int NetworkSend_SendMultipleFileListings(SOCKET socket, struct NetworkSend_FileL
 
 int NetworkSend_ReadFileListing(SOCKET socket, struct NetworkSend_FileListing fileData[]) {
     // First, the file name length must be read, in order to know how many bytes to read in total.
-    int nameLength;
+    char nameLength;
     int result = Socket_Receive(socket, &nameLength, sizeof(nameLength));
     if (result <= 0) return result;
     fileData->nameLength = nameLength;

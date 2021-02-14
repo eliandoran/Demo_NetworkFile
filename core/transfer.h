@@ -8,7 +8,7 @@
 #define NETWORKSEND_RESPONSE_TRANSFER_FILE_NOT_FOUND 1
 #define NETWORKSEND_RESPONSE_TRANSFER_IO_ERROR 2
 
-#define NETWORKSEND_TRANSFER_BUFFER_SIZE 2048
+#define NETWORKSEND_TRANSFER_BUFFER_SIZE 262144
 
 struct NetworkSend_TransferInfo {
     DWORD fileSizeLow;
@@ -122,6 +122,7 @@ int NetworkFile_ReceiveFile(
         return -1;
     }
 
+    DWORD startTickCount = GetTickCount();
     DWORD lastTickCount = GetTickCount();
     unsigned long long lastTotalBytesWritten = 0;
     int timeBuf[5];
@@ -172,10 +173,18 @@ int NetworkFile_ReceiveFile(
 
         // Connection is shutting down.
         if (bytesRead == 0) {
+            printf("\n");
+
             LOG("Connection is shutting down...\n");
+
+            int duration = ((GetTickCount() - startTickCount) / 1000);
+            printf("Downloaded in %d s.\n", duration);
+
             return 1;
         }
-    } while (bytesRead > 0);
+    } while (bytesRead > 0);        
+
+    return 1;
 }
 
 #endif

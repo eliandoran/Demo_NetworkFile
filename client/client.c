@@ -33,15 +33,23 @@ int NetworkSend_DownloadFile(SOCKET connectSocket, char* filePath) {
     // Parse the response.
     struct NetworkSend_Response response;
     result = NetworkSend_ReadResponse(connectSocket, &response);    
+    if (result < 0) return -1;
 
-    if (result == NETWORKSEND_RESPONSE_TRANSFER_FILE_NOT_FOUND) {
-        LOG_ERROR("File \"%s\" not found on remote server.\n", filePath);
-    } else if (result != NETWORKSEND_RESPONSE_STATUS_OK) {
-        LOG_ERROR("Unable to obtain file \"%s\" on remote server due to an unknown error: %d.\n", filePath, result);
+    switch (response.status) {
+        case NETWORKSEND_RESPONSE_STATUS_OK:
+            LOG("Transfer of file \"%s\" starting.\n", filePath);
+            break;
+
+        case NETWORKSEND_RESPONSE_TRANSFER_FILE_NOT_FOUND:
+            LOG_ERROR("File \"%s\" not found on remote server.\n", filePath);
+            return result;
+
+        default:
+            LOG_ERROR("Unable to obtain file \"%s\" on remote server due to an unknown error: %d.\n", filePath, result);
+            return result;
     }
-    
-    return result;
 
+    return result;
 }
 
 int NetworkSend_RequestFiles(SOCKET connectSocket) {
@@ -59,7 +67,7 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
     // Parse the response.
     struct NetworkSend_Response response;
     result = NetworkSend_ReadResponse(connectSocket, &response);
-    if (response.status != NETWORKSEND_RESPONSE_STATUS_OK) {
+    if (result < 0 || response.status != NETWORKSEND_RESPONSE_STATUS_OK) {
         LOG_ERROR("Failed to list files on remote server: %d\n", response.status);
         return -1;
     }
@@ -97,7 +105,7 @@ int NetworkSend_HandleConnect(SOCKET connectSocket) {
     LOG("Connected to port %s:%s successfully.\n", NETWORKSEND_HOST, NETWORKSEND_PORT);
 
     //int result = NetworkSend_RequestFiles(connectSocket);
-    int result = NetworkSend_DownloadFile(connectSocket, "hello.c");
+    int result = NetworkSend_DownloadFile(connectSocket, "server.c");
     if (result < 0) return result;
 }
 

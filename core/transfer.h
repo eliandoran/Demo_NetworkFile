@@ -9,17 +9,22 @@
 
 int NetworkSend_TransferFile(SOCKET clientSocket, char* path) {
     struct NetworkSend_Response response;
+    int result;
     HANDLE file = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 
+    // Check for file opening errors.
     int lastError = GetLastError();
     if (lastError != 0) {
         LOG_ERROR("Unable to open file: %d\n", lastError);
         response.status = NETWORKSEND_RESPONSE_TRANSFER_FILE_NOT_FOUND;
-        int result = NetworkSend_SendResponse(clientSocket, &response);
+        result = NetworkSend_SendResponse(clientSocket, &response);
         return result;
     }
 
-    return 0;
+    // Send a successful response.
+    response.status = NETWORKSEND_RESPONSE_STATUS_OK;
+    result = NetworkSend_SendResponse(clientSocket, &response);
+    return result;
 }
 
 #endif

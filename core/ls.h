@@ -33,18 +33,14 @@ int NetworkSend_SendMultipleFileListings(SOCKET socket, struct NetworkSend_FileL
         bufLength += sizeof(fileData->highFileSize);
     }
 
-    printf("Alloc %d %d\n", bufLength, numFiles);
-
     // Allocate the buffer.
     char* data = malloc(sizeof(char) * bufLength);    
     char* dataCursor = data;
     ZeroMemory(data, bufLength);
 
     for (int i=0; i<numFiles; i++) {
-        printf("Index: %d\n", i);
         struct NetworkSend_FileListing* fileData = &filesData[i];
         int nameLength = (fileData->nameLength + 1);    // incl. null terminator
-        printf("Name length: %d\n", nameLength);
 
         // Set the nameLength field.
         memcpy(dataCursor, &nameLength, sizeof(nameLength));

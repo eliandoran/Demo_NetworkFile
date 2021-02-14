@@ -12,39 +12,23 @@
 #include "response.h"
 #include "format.h"
 #include "transfer.h"
+#include "progress.h"
 
 #define NETWORKSEND_HOST "127.0.0.1"
 #define NETWORKSEND_DATE_BUF 128
 #define NETWORKSEND_TIME_BUF 64
 #define NETWORKSEND_SIZE_BUF 100
+#define NETWORKSEND_PROGRESS_BUF 80
 
 char sizeBuf[NETWORKSEND_SIZE_BUF];
+char progressBuf[NETWORKSEND_PROGRESS_BUF];
 
 void NetworkSend_DownloadFileCallback(
         unsigned long long bytesWritten,
         unsigned long long fileSize
 ) {
-    // Reuse the same line for showing progress.
-    printf("\r");
-
-    // Blank the current line first.
-    for (int i=0; i<50; i++) {
-        printf(" ");
-    }
- 
-    printf("\rDOWNLOAD ");
-
-    // Calculate 
-    float percentage = ((float)bytesWritten / fileSize) * 100;
-    LARGE_INTEGER li;
-    li.QuadPart = bytesWritten;
-
-    NetworkSend_FormatFileSize(li.LowPart, li.HighPart, sizeBuf, sizeof(sizeBuf));
-    printf("%s / ", sizeBuf);
-
-    li.QuadPart = fileSize;
-    NetworkSend_FormatFileSize(li.LowPart, li.HighPart, sizeBuf, sizeof(sizeBuf));
-    printf("%s (%.2f%%)", sizeBuf, percentage);
+    NetworkSend_FormatTransferProgressBar(bytesWritten, fileSize, progressBuf, sizeof(progressBuf));
+    printf("\r%s", progressBuf);
 }
 
 int NetworkSend_DownloadFile(SOCKET connectSocket, char* filePath) {

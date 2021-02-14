@@ -112,7 +112,7 @@ int NetworkFile_ReceiveFile(SOCKET socket, char* path) {
     
     // Check if file opened successfully for creation.
     int lastError = GetLastError();
-    if (lastError != 0) {
+    if (lastError != 0 && lastError != ERROR_ALREADY_EXISTS) {
         LOG_ERROR("Unable to open file for write: %d\n.", lastError);
         return -1;
     }

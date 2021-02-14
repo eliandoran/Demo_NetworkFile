@@ -63,7 +63,7 @@ int NetworkSend_DownloadFile(SOCKET connectSocket, char* filePath) {
 
     result = NetworkFile_ReceiveFile(connectSocket, filePath);
     if (result < 1) {
-        LOG_ERROR("Unable to complete transfer: %d.\n", result);
+        LOG_ERROR("Unable to complete transfer: %d\n.", result);
         return -1;
     }
 

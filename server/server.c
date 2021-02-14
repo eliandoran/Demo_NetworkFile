@@ -35,6 +35,7 @@ int NetworkSend_HandleClient(SOCKET clientSocket) {
         case NETWORKSEND_REQUEST_COMMAND_DOWNLOAD: {
             char* path = request.argument;
             NetworkSend_TransferFile(clientSocket, path);
+            break;
         }
 
         default:

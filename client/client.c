@@ -11,6 +11,7 @@
 #include "request.h"
 #include "response.h"
 #include "format.h"
+#include "transfer.h"
 
 #define NETWORKSEND_HOST "127.0.0.1"
 #define NETWORKSEND_DATE_BUF 128
@@ -28,6 +29,19 @@ int NetworkSend_DownloadFile(SOCKET connectSocket, char* filePath) {
     // Send the request.
     result = NetworkSend_SendRequest(connectSocket, &request);
     if (result < 0) return -1;
+
+    // Parse the response.
+    struct NetworkSend_Response response;
+    result = NetworkSend_ReadResponse(connectSocket, &response);    
+
+    if (result == NETWORKSEND_RESPONSE_TRANSFER_FILE_NOT_FOUND) {
+        LOG_ERROR("File \"%s\" not found on remote server.\n", filePath);
+    } else if (result != NETWORKSEND_RESPONSE_STATUS_OK) {
+        LOG_ERROR("Unable to obtain file \"%s\" on remote server due to an unknown error: %d.\n", filePath, result);
+    }
+    
+    return result;
+
 }
 
 int NetworkSend_RequestFiles(SOCKET connectSocket) {

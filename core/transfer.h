@@ -104,11 +104,16 @@ int NetworkSend_TransferFile(SOCKET clientSocket, char* path) {
     return result;
 }
 
-int NetworkFile_ReceiveFile(SOCKET socket, char* path) {
+int NetworkFile_ReceiveFile(
+        SOCKET socket,
+        char* path,
+        unsigned long long fileSize,
+        void (statusCallback)(unsigned long long, unsigned long long)) {
     char buffer[NETWORKSEND_TRANSFER_BUFFER_SIZE];
     int bytesRead;
     DWORD bytesWritten;
     HANDLE file = CreateFileA(path, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
+    unsigned long long totalBytesWritten = 0;
     
     // Check if file opened successfully for creation.
     int lastError = GetLastError();
@@ -129,7 +134,12 @@ int NetworkFile_ReceiveFile(SOCKET socket, char* path) {
                 LOG_ERROR("I/O error: %d\n", GetLastError());
                 return -1;
             } else {
+                totalBytesWritten += bytesWritten;
                 LOG("Wrote %ul bytes.\n", bytesWritten);
+
+                if (statusCallback != NULL) {
+                    statusCallback(totalBytesWritten, fileSize);
+                }
             }
         }
 

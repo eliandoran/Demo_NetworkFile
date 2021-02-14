@@ -18,6 +18,12 @@
 #define NETWORKSEND_TIME_BUF 64
 #define NETWORKSEND_SIZE_BUF 100
 
+void NetworkSend_DownloadFileCallback(
+        unsigned long long fileSize,
+        unsigned long long bytesWritten) {
+    printf("DOWNLOAD: %llu / %llu\n", bytesWritten, fileSize);
+}
+
 int NetworkSend_DownloadFile(SOCKET connectSocket, char* filePath) {
     int result;
     struct NetworkSend_Request request;
@@ -61,7 +67,10 @@ int NetworkSend_DownloadFile(SOCKET connectSocket, char* filePath) {
         LOG("Downloading file \"%s\" of size %s...\n", filePath, sizeBuf);
     }
 
-    result = NetworkFile_ReceiveFile(connectSocket, filePath);
+    // Calculate the file size.
+    unsigned long long fileSize = (transferInfo.fileSizeHigh * (MAXDWORD + 1)) + transferInfo.fileSizeLow;
+
+    result = NetworkFile_ReceiveFile(connectSocket, filePath, fileSize, NetworkSend_DownloadFileCallback);
     if (result < 1) {
         LOG_ERROR("Unable to complete transfer: %d\n.", result);
         return -1;

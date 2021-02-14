@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define LOG_QUIET
+//#define LOG_SOCKET
+
 #include "core.h"
 #include "ls.h"
 #include "log.h"

@@ -112,7 +112,11 @@ void Socket_LogBytes(const char* buffer, int bufferLen) {
 
 int Socket_Send(SOCKET socket, const void* buffer, int bufferLen) {    
     const char *curPointer = (char*) buffer;
+
+    #ifdef LOG_SOCKET
     printf("[SEND] "); Socket_LogBytes(curPointer, bufferLen);
+    #endif
+
     int remaining = bufferLen;
 
     while (remaining > 0) {
@@ -131,7 +135,10 @@ int Socket_Send(SOCKET socket, const void* buffer, int bufferLen) {
         remaining -= num;
     }
 
+    #ifdef LOG_SOCKET
     LOG("Sent %d bytes.\n", bufferLen);    
+    #endif
+    
     return bufferLen;
 }
 
@@ -159,8 +166,11 @@ int Socket_Receive(SOCKET socket, void* buffer, int bufferLen) {
             return 0;
         }
 
+        #ifdef LOG_SOCKET
         LOG("Received %d bytes.\n", num);
         printf("[RECV] "); Socket_LogBytes(curPointer, num);
+        #endif
+
         received += num;
         remaining -= num;
     }

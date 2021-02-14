@@ -8,20 +8,23 @@
 #include "log.h"
 #include "socket.h"
 #include "request.h"
-
+#include "command.h"
 #include "ls.h"
 
 int NetworkSend_HandleClient(SOCKET clientSocket) {
     LOG("Client connected.\n");
 
-    char buf[512];
     int result;
 
     struct NetworkSend_Request request;    
     result = NetworkSend_ReadRequest(clientSocket, &request);
     if (result < 0) return result;
 
-    LOG("%d CMD: %d ARG: %s.\n", request.version, request.commandId, request.argument);
+    // Obtain a friendly name of the command.
+    char commandName[NETWORKSEND_REQUEST_COMMAND_TEXT_BUFSIZE];
+    NetworkSend_GetCommandTextFromId(request.commandId, commandName, sizeof(commandName));
+
+    LOG("%d CMD: %s ARG: %s.\n", request.version, commandName, request.argument);
     
     switch (request.commandId) {
         case NETWORKSEND_REQUEST_COMMAND_LIST_FILES:

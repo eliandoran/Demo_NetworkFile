@@ -3,9 +3,7 @@
 
 #include "core.h"
 #include "socket.h"
-
-#define NETWORKSEND_REQUEST_COMMAND_LIST_FILES 0
-#define NETWORKSEND_REQUEST_COMMAND_DOWNLOAD 1
+#include "command.h"
 
 #define NETWORKSEND_REQUEST_VERSION_1 1
 

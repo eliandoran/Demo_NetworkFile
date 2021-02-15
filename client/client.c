@@ -156,16 +156,34 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
     }    
 }
 
-int NetworkSend_HandleConnect(SOCKET connectSocket) {
-    LOG("Connected to port %s:%s successfully.\n", NETWORKSEND_HOST, NETWORKSEND_PORT);
-
-    //int result = NetworkSend_RequestFiles(connectSocket);
-    int result = NetworkSend_DownloadFile(connectSocket, "FastInvoice.rar");
+int NetworkSend_HandleListFiles(SOCKET connectSocket) {
+    int result = NetworkSend_RequestFiles(connectSocket);
     if (result < 0) return result;
 }
 
-int main() {
+int main(int argc, char** argv) {
     printf("NetworkSend Client\n\n");
+
+    if (argc != 3) {
+        printf("Usage: %s [host] ls\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    char* host = argv[1];
+    char* commandText = argv[2];
+    int commandId = NetworkSend_GetCommandIdFromText(commandText);
+
+    switch (commandId) {
+        case NETWORKSEND_REQUEST_COMMAND_LIST_FILES:
+            break;
+
+        case NETWORKSEND_REQUEST_COMMAND_DOWNLOAD:
+            break;
+
+        default:
+            printf("Unknown command: %s.\n", commandText);
+            return -1;
+    }
 
     int result = 0;
     if (result = Socket_Initialize()) {
@@ -182,12 +200,20 @@ int main() {
     }
 
     // Handle the connection to server.    
-    result = NetworkSend_HandleConnect(connectSocket);
+    LOG("Connected to port %s:%s successfully.\n", NETWORKSEND_HOST, NETWORKSEND_PORT);
+
+    switch (commandId) {
+        case NETWORKSEND_REQUEST_COMMAND_LIST_FILES:
+            result = NetworkSend_HandleListFiles(connectSocket);
+            break;
+    }
+
     if (result < 0) {
         LOG_ERROR("Connection error.\n");
         Socket_Cleanup();
         return EXIT_FAILURE;
     }
+
 
     LOG("Client has ended.\n");
     Socket_Cleanup();

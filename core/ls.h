@@ -135,8 +135,6 @@ int NetworkSend_ListFiles(SOCKET clientSocket, char* path) {
             filesData[curBufIndex].lowFileSize = findData.nFileSizeLow;
             filesData[curBufIndex].highFileSize = findData.nFileSizeHigh;
 
-            printf("%d %s %d %d\n", curBufIndex, filesData[curBufIndex].name, filesData[curBufIndex].lowFileSize, filesData[curBufIndex].highFileSize);
-
             curBufIndex++;
             if (curBufIndex >= NETWORKSEND_FILE_BUF_COUNT) {
                 NetworkSend_SendMultipleFileListings(clientSocket, filesData, NETWORKSEND_FILE_BUF_COUNT);

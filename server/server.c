@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 //#define LOG_QUIET
-#define LOG_SOCKET
+//#define LOG_SOCKET
 
 #include "core.h"
 #include "log.h"
@@ -29,7 +29,7 @@ int NetworkSend_HandleClient(SOCKET clientSocket) {
     
     switch (request.commandId) {
         case NETWORKSEND_REQUEST_COMMAND_LIST_FILES:
-            NetworkSend_ListFiles(clientSocket, ".\\*");
+            NetworkSend_ListFiles(clientSocket, "data\\*");
             break;
 
         case NETWORKSEND_REQUEST_COMMAND_DOWNLOAD: {

@@ -161,16 +161,26 @@ int NetworkSend_HandleListFiles(SOCKET connectSocket) {
     if (result < 0) return result;
 }
 
+int NetworkSend_HandleRetrieveFile(SOCKET connectSocket, char* path) {
+    int result = NetworkSend_TransferFile(connectSocket, path);
+    if (result < 0) return result;
+}
+
+void NetworkSend_DisplayUsage(char *programName) {
+    printf("Usage: %s [host] ls\n", programName);
+}
+
 int main(int argc, char** argv) {
     printf("NetworkSend Client\n\n");
 
-    if (argc != 3) {
-        printf("Usage: %s [host] ls\n", argv[0]);
+    if (argc < 3 || argc > 4) {
+        NetworkSend_DisplayUsage(argv[0]);
         return EXIT_FAILURE;
     }
 
     char* host = argv[1];
     char* commandText = argv[2];
+    char* arg = NULL;
     int commandId = NetworkSend_GetCommandIdFromText(commandText);
 
     switch (commandId) {
@@ -178,6 +188,12 @@ int main(int argc, char** argv) {
             break;
 
         case NETWORKSEND_REQUEST_COMMAND_DOWNLOAD:
+            if (argc != 4) {
+                NetworkSend_DisplayUsage(argv[0]);
+                return EXIT_FAILURE;
+            }
+            
+            arg = argv[3];
             break;
 
         default:
@@ -205,6 +221,10 @@ int main(int argc, char** argv) {
     switch (commandId) {
         case NETWORKSEND_REQUEST_COMMAND_LIST_FILES:
             result = NetworkSend_HandleListFiles(connectSocket);
+            break;
+
+        case NETWORKSEND_REQUEST_COMMAND_DOWNLOAD:
+            result = NetworkSend_HandleRetrieveFile(connectSocket, arg);
             break;
     }
 

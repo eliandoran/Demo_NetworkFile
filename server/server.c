@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//#define LOG_QUIET
+#define LOG_QUIET
 //#define LOG_SOCKET
 
 #include "core.h"
@@ -11,6 +11,8 @@
 #include "command.h"
 #include "transfer.h"
 #include "ls.h"
+
+#define SOURCE_DIR "data"
 
 int NetworkSend_HandleClient(SOCKET clientSocket) {
     LOG("Client connected.\n");
@@ -34,7 +36,9 @@ int NetworkSend_HandleClient(SOCKET clientSocket) {
 
         case NETWORKSEND_REQUEST_COMMAND_DOWNLOAD: {
             char* path = request.argument;
-            NetworkSend_TransferFile(clientSocket, path);
+            char* fullPath = (char*)malloc(strlen(path) + strlen((SOURCE_DIR) + 2));
+            sprintf(fullPath, "%s\\%s", SOURCE_DIR, path);
+            NetworkSend_TransferFile(clientSocket, fullPath);
             break;
         }
 

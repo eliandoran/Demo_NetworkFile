@@ -224,7 +224,7 @@ int main(int argc, char** argv) {
             break;
 
         case NETWORKSEND_REQUEST_COMMAND_DOWNLOAD:
-            result = NetworkSend_HandleRetrieveFile(connectSocket, arg);
+            result = NetworkSend_DownloadFile(connectSocket, arg);
             break;
     }
 

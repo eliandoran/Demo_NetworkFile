@@ -99,6 +99,9 @@ int NetworkSend_TransferFile(SOCKET clientSocket, char* path) {
         } else {
             return 1;
         }
+
+        // TODO: Fixes buffer corruption, but slows down transfer speed considerably. To investigate root cause.
+        Sleep(1);
     }
 
     return result;

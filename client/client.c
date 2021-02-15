@@ -151,7 +151,7 @@ int NetworkSend_RequestFiles(SOCKET connectSocket) {
         NetworkSend_FormatFileTime(fileData.lowDateTime, fileData.highDateTime, timeBuf, NETWORKSEND_TIME_BUF);
         NetworkSend_FormatFileSize(fileData.lowFileSize, fileData.highFileSize, sizeBuf, NETWORKSEND_SIZE_BUF);
 
-        printf("%s  %s\t %s\t %s\n", dateBuf, timeBuf, sizeBuf, fileData.name);
+        printf("%s %s %12s  %s\n", dateBuf, timeBuf, sizeBuf, fileData.name);
         numFiles++;
     }    
 }
